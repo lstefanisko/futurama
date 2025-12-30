@@ -8,12 +8,13 @@ import PricingSection from './components/PricingSection';
 import Carousel from './components/Carousel';
 import VisionStream from './components/VisionStream';
 import AuthModal from './components/AuthModal';
+import SSHKeyGenerator from './components/SSHKeyGenerator';
 import { translations } from './translations';
 import { supabase, fetchUserVault } from './services/supabaseService';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('en');
-  const [view, setView] = useState<'explorer' | 'pricing' | 'vault' | 'dashboard'>('explorer');
+  const [view, setView] = useState<'explorer' | 'pricing' | 'vault' | 'dashboard' | 'keys'>('explorer');
   const [selectedYear, setSelectedYear] = useState<number>(2035);
   const [selectedCategory, setSelectedCategory] = useState<Category>(Category.TECHNOLOGY);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
@@ -93,13 +94,13 @@ const App: React.FC = () => {
           </div>
           
           <nav className="hidden md:flex items-center gap-12 text-[11px] font-orbitron font-black tracking-[0.4em]">
-            {['explorer', 'vault', 'pricing'].map(v => (
+            {['explorer', 'vault', 'keys', 'pricing'].map(v => (
               <button 
                 key={v}
                 onClick={() => setView(v as any)} 
                 className={`relative py-2 transition-colors ${view === v ? 'text-cyan-400' : 'text-zinc-500 hover:text-white'}`}
               >
-                {t[v === 'pricing' ? 'pricing' : v === 'explorer' ? 'explorer' : 'vault']}
+                {t[v === 'pricing' ? 'pricing' : v === 'explorer' ? 'explorer' : v === 'vault' ? 'vault' : 'sshKeys']}
                 {view === v && <span className="absolute -bottom-2 left-0 w-full h-[1px] bg-cyan-500 shadow-[0_0_10px_#06b6d4]" />}
               </button>
             ))}
@@ -234,6 +235,12 @@ const App: React.FC = () => {
                ))}
              </div>
            )}
+        </main>
+      )}
+
+      {view === 'keys' && (
+        <main className="max-w-[1400px] mx-auto px-8 pt-12 pb-24 animate-in fade-in duration-700">
+          <SSHKeyGenerator lang={lang} userId={user?.id} />
         </main>
       )}
     </div>
