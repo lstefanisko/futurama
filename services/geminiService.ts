@@ -5,12 +5,18 @@ import { Category, Prediction, Language, PredictionSource } from "../types";
 // Always use the process.env.API_KEY which will be provided by Vite/Vercel
 const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
+// Fix: Added missing languages from the Language type to satisfy Record<Language, string>
 const languageMap: Record<Language, string> = {
   sk: 'slovenčine',
   en: 'English',
   de: 'Deutsch',
   pl: 'polskim',
-  es: 'español'
+  es: 'español',
+  fr: 'français',
+  it: 'italiano',
+  ja: '日本語',
+  pt: 'português',
+  zh: '中文'
 };
 
 export function decode(base64: string): Uint8Array {

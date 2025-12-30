@@ -7,7 +7,8 @@ export enum Category {
   SPACE = 'SPACE'
 }
 
-export type Language = 'sk' | 'en' | 'de' | 'pl' | 'es';
+export type Language = 'en' | 'sk' | 'de' | 'pl' | 'es' | 'fr' | 'it' | 'ja' | 'pt' | 'zh';
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY';
 
 export interface RegionalImpact {
   region: string;
@@ -28,6 +29,7 @@ export interface Task {
 }
 
 export interface Prediction {
+  id: string;
   title: string;
   summary: string;
   analysis: string;
@@ -39,13 +41,14 @@ export interface Prediction {
   category: Category;
   imageUrl?: string;
   sources?: PredictionSource[];
+  timestamp: number;
 }
 
 export interface PricingPlan {
   id: string;
   name: string;
   description: string;
-  price: string;
+  price: Record<Currency, string>;
   period: string;
   features: string[];
   isPopular?: boolean;
