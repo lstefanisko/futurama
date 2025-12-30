@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Task, Language } from '../types';
 import { translations } from '../translations';
 import { ORBITRON_LABEL_MD } from '../utils/styleConstants';
+import { generateId } from '../utils/helpers';
 
 interface TaskListProps {
   predictionId: string;
@@ -34,7 +35,7 @@ const TaskList: React.FC<TaskListProps> = ({ predictionId, lang }) => {
     if (!newTaskText.trim()) return;
 
     const newTask: Task = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: generateId(),
       text: newTaskText.trim(),
       completed: false,
       createdAt: Date.now(),
