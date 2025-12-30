@@ -47,17 +47,7 @@ const en = {
     [Category.HEALTH]: "BIO-GENETICS",
     [Category.SPACE]: "GALACTIC AXIS",
   },
-  legend: { low: "Minimal", med: "Sustained", high: "Critical", crit: "X-Level" },
-  sshKeys: "API Keys",
-  generateKey: "Generate New Key",
-  publicKey: "Public Key",
-  privateKey: "Private Key",
-  copyKey: "Copy",
-  downloadKey: "Download",
-  keyCopied: "Copied!",
-  keyWarning: "Store your private key securely. It will not be shown again.",
-  keyGenerated: "SSH Key Generated",
-  generating: "Generating..."
+  legend: { low: "Minimal", med: "Sustained", high: "Critical", crit: "X-Level" }
 };
 
 const sk = {
@@ -106,17 +96,7 @@ const sk = {
     [Category.HEALTH]: "BIO-GENETIKA",
     [Category.SPACE]: "VESMÍR",
   },
-  legend: { low: "Nízka", med: "Stredná", high: "Vysoká", crit: "Kritická" },
-  sshKeys: "API Kľúče",
-  generateKey: "Generovať Nový Kľúč",
-  publicKey: "Verejný Kľúč",
-  privateKey: "Súkromný Kľúč",
-  copyKey: "Kopírovať",
-  downloadKey: "Stiahnuť",
-  keyCopied: "Skopírované!",
-  keyWarning: "Uložte si súkromný kľúč bezpečne. Nebude znovu zobrazený.",
-  keyGenerated: "SSH Kľúč Vygenerovaný",
-  generating: "Generujem..."
+  legend: { low: "Nízka", med: "Stredná", high: "Vysoká", crit: "Kritická" }
 };
 
 // Fixed the typo: changed 'f' to 'fr' to match the Language type definition
