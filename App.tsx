@@ -132,6 +132,17 @@ const App: React.FC = () => {
                 </button>
               </div>
             </section>
+
+            <section className="glass rounded-[2.5rem] p-10 border border-white/10">
+              <h2 className="text-[11px] font-orbitron font-bold text-zinc-500 mb-8 uppercase tracking-[0.4em]">
+                {t.globalImpact}
+              </h2>
+              <WorldMap 
+                data={prediction?.regionalImpact || []} 
+                lang={lang} 
+                isLoading={isLoading} 
+              />
+            </section>
           </div>
           <div className="lg:col-span-8">
             {isLoading ? (
