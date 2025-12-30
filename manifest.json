@@ -1,6 +1,6 @@
 {
-  "short_name": "FUTURAMA",
-  "name": "FUTURAMA: AI Oracle",
+  "short_name": "Forecast",
+  "name": "FutureForecast: AI Oracle",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,6 +10,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#020617",
+  "background_color": "#020617"
 }

@@ -2,10 +2,6 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { Category, Prediction, Language, PredictionSource } from "../types";
 
-// Always use the process.env.API_KEY which will be provided by Vite/Vercel
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-
-// Fix: Added missing languages from the Language type to satisfy Record<Language, string>
 const languageMap: Record<Language, string> = {
   sk: 'slovenčine',
   en: 'English',
@@ -49,15 +45,16 @@ export async function decodeAudioData(
 }
 
 export const getFuturePrediction = async (year: number, category: Category, lang: Language): Promise<Prediction> => {
-  const ai = getAI();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Urob detailnú a vedecky podloženú predpoveď budúcnosti pre rok ${year} v oblasti ${category}. 
-    Využi dostupné informácie o aktuálnych trendoch a vedeckom pokroku. 
-    Odpovedaj v jazyku: ${languageMap[lang]}. 
-    Odpoveď musí byť v čistom formáte JSON podľa zadanej schémy.`,
+    model: "gemini-3-pro-preview",
+    contents: `Conduct a highly detailed, scientific, and futuristic prediction for the year ${year} in the sector: ${category}. 
+    Utilize real-time trends and breakthrough research. 
+    Respond strictly in: ${languageMap[lang]}. 
+    The output must be a clean JSON object following the schema provided.`,
     config: {
       tools: [{ googleSearch: {} }],
+      thinkingConfig: { thinkingBudget: 32768 },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -86,11 +83,6 @@ export const getFuturePrediction = async (year: number, category: Category, lang
     }
   });
 
-  const text = response.text;
-  if (!text) {
-    throw new Error("Model nevrátil žiadne dáta.");
-  }
-
   const sources: PredictionSource[] = [];
   const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
   if (groundingChunks) {
@@ -100,18 +92,23 @@ export const getFuturePrediction = async (year: number, category: Category, lang
           uri: chunk.web.uri,
           title: chunk.web.title
         });
+      } else if (chunk.maps) {
+        sources.push({
+            uri: chunk.maps.uri,
+            title: chunk.maps.title
+        });
       }
     });
   }
 
-  // Handle cases where model might include Markdown delimiters even with responseMimeType: "application/json"
+  const text = response.text;
+  if (!text) throw new Error("AI Signal Lost.");
+
   let prediction;
   try {
-    const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    prediction = JSON.parse(cleanJson);
+    prediction = JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
   } catch (err) {
-    console.error("Failed to parse prediction JSON:", err, text);
-    throw new Error(lang === 'sk' ? "Nepodarilo sa spracovať odpoveď od AI." : "Failed to parse AI response.");
+    throw new Error(lang === 'sk' ? "Chyba syntézy dát." : "Data Synthesis Failure.");
   }
   
   return { 
@@ -122,63 +119,62 @@ export const getFuturePrediction = async (year: number, category: Category, lang
   };
 };
 
+export const deepTemporalAnalysis = async (prediction: Prediction, query: string, lang: Language): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const response = await ai.models.generateContent({
+    model: "gemini-3-pro-preview",
+    contents: `Analyze this prediction:
+    Title: ${prediction.title} (${prediction.year})
+    Analysis: ${prediction.analysis}
+    
+    User Inquiry: ${query}
+    
+    Think deeply about logical consistency and sociological ripple effects. Respond in ${languageMap[lang]}.`,
+    config: {
+      thinkingConfig: { thinkingBudget: 32768 }
+    }
+  });
+
+  return response.text || "Analysis link unstable.";
+};
+
 export const generateFutureImage = async (prediction: Prediction): Promise<string> => {
-  const ai = getAI();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
     contents: {
       parts: [
-        { text: `Cinematic ultra-realistic visualization of the future year ${prediction.year}: ${prediction.title}. Category: ${prediction.category}. Futuristic aesthetic, 8k, detailed lighting.` }
+        { text: `Futuristic cinematic visualization of ${prediction.year} ${prediction.title}. Style: Neo-realism, 8k, detailed shadows.` }
       ]
     },
     config: { imageConfig: { aspectRatio: "16:9" } }
   });
 
-  const candidate = response.candidates?.[0];
-  const part = candidate?.content?.parts?.find(p => p.inlineData);
-  
-  if (part?.inlineData?.data) {
-    return `data:image/png;base64,${part.inlineData.data}`;
-  }
-  
-  return '';
+  const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+  return part?.inlineData?.data ? `data:image/png;base64,${part.inlineData.data}` : '';
 };
 
 export const editFutureImage = async (base64Image: string, editPrompt: string): Promise<string> => {
-  const ai = getAI();
-  // Odstránime prefix "data:image/png;base64," ak existuje
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const base64Data = base64Image.split(',')[1] || base64Image;
-  
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
     contents: {
       parts: [
-        {
-          inlineData: {
-            data: base64Data,
-            mimeType: 'image/png'
-          }
-        },
+        { inlineData: { data: base64Data, mimeType: 'image/png' } },
         { text: editPrompt }
       ]
     }
   });
-
-  const candidate = response.candidates?.[0];
-  const part = candidate?.content?.parts?.find(p => p.inlineData);
-  
-  if (part?.inlineData?.data) {
-    return `data:image/png;base64,${part.inlineData.data}`;
-  }
-  
-  return '';
+  const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+  return part?.inlineData?.data ? `data:image/png;base64,${part.inlineData.data}` : '';
 };
 
 export const generateFutureAudio = async (text: string, lang: Language): Promise<string> => {
-  const ai = getAI();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
-    contents: [{ parts: [{ text: `Say this in ${languageMap[lang]}: ${text}` }] }],
+    contents: [{ parts: [{ text: `Read clearly in ${languageMap[lang]}: ${text}` }] }],
     config: {
       responseModalities: [Modality.AUDIO],
       speechConfig: {
@@ -186,9 +182,5 @@ export const generateFutureAudio = async (text: string, lang: Language): Promise
       },
     },
   });
-
-  const candidate = response.candidates?.[0];
-  const part = candidate?.content?.parts?.[0];
-  
-  return part?.inlineData?.data || '';
+  return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || '';
 };

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Prediction, Language, RegionalImpact } from '../types';
 import { translations } from '../translations';
-import { generateFutureImage, editFutureImage, generateFutureAudio, decode, decodeAudioData } from '../services/geminiService';
+import { generateFutureImage, editFutureImage, generateFutureAudio, deepTemporalAnalysis, decode, decodeAudioData } from '../services/geminiService';
 import TaskList from './TaskList';
 
 interface PredictionCardProps {
@@ -19,32 +19,23 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
   const [imgUrl, setImgUrl] = useState<string | null>(prediction.imageUrl || null);
   const [isGeneratingImg, setIsGeneratingImg] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [activeRegion, setActiveRegion] = useState<RegionalImpact | null>(null);
+  const [audioError, setAudioError] = useState(false);
   const [editPrompt, setEditPrompt] = useState("");
   const [isEditingImg, setIsEditingImg] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('none');
   const [isSaved, setIsSaved] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   
-  const predictionId = prediction.id;
-
-  const [freeImagesUsed, setFreeImagesUsed] = useState<number>(() => {
-    return parseInt(localStorage.getItem('free_images_used') || '0');
-  });
-
-  const canGenerateImage = isPro || freeImagesUsed < 1;
+  const [analysisQuery, setAnalysisQuery] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
   useEffect(() => {
-    if (errorMsg) {
-      const timer = setTimeout(() => setErrorMsg(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [errorMsg]);
-
-  useEffect(() => {
-    setSortOrder('none');
     setImgUrl(prediction.imageUrl || null);
     setIsSaved(false);
+    setAudioError(false);
+    setAnalysisResult(null);
+    setAnalysisQuery("");
   }, [prediction]);
 
   const sortedRegionalImpact = useMemo(() => {
@@ -58,11 +49,12 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
   const handlePlayAudio = async () => {
     if (isPlayingAudio) return;
     setIsPlayingAudio(true);
-    setErrorMsg(null);
+    setAudioError(false);
     try {
       const audioBase64 = await generateFutureAudio(prediction.summary, lang);
       if (audioBase64) {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+        const AudioCtxClass = (window.AudioContext || (window as any).webkitAudioContext);
+        const audioCtx = new AudioCtxClass({ sampleRate: 24000 });
         const decoded = decode(audioBase64);
         const buffer = await decodeAudioData(decoded, audioCtx);
         const source = audioCtx.createBufferSource();
@@ -70,150 +62,291 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
         source.connect(audioCtx.destination);
         source.onended = () => setIsPlayingAudio(false);
         source.start();
+      } else {
+        throw new Error("Empty audio data");
       }
-    } catch (error) {
-      setErrorMsg(lang === 'sk' ? "Audio zlyhalo." : "Audio failed.");
+    } catch (e) { 
+      setAudioError(true);
       setIsPlayingAudio(false);
+      setTimeout(() => setAudioError(false), 3000);
     }
   };
 
   const handleImageGen = async () => {
-    if (!canGenerateImage) { alert(t.proOnly); return; }
     setIsGeneratingImg(true);
-    setErrorMsg(null);
     try {
       const url = await generateFutureImage(prediction);
-      if (url) {
-        setImgUrl(url);
-        if (!isPro) {
-          const newCount = freeImagesUsed + 1;
-          setFreeImagesUsed(newCount);
-          localStorage.setItem('free_images_used', newCount.toString());
-        }
-      }
-    } catch (error) {
-      setErrorMsg(lang === 'sk' ? "Vizualizácia zlyhala." : "Visualization failed.");
+      if (url) setImgUrl(url);
     } finally { setIsGeneratingImg(false); }
   };
 
-  const handleDownload = () => {
-    if (!imgUrl) return;
-    const link = document.createElement('a');
-    link.href = imgUrl;
-    link.download = `FUTURAMA_${prediction.title.replace(/\s+/g, '_')}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleImageEdit = async () => {
+    if (!imgUrl || !editPrompt.trim()) return;
+    setIsEditingImg(true);
+    try {
+      const url = await editFutureImage(imgUrl, editPrompt);
+      if (url) setImgUrl(url);
+    } finally { setIsEditingImg(false); setEditPrompt(""); }
   };
 
-  const handleSaveToVault = () => {
-    if (onSave) {
-      onSave({ ...prediction, imageUrl: imgUrl || undefined });
-      setIsSaved(true);
+  const handleDeepAnalysis = async () => {
+    if (!analysisQuery.trim() || isAnalyzing) return;
+    setIsAnalyzing(true);
+    try {
+      const result = await deepTemporalAnalysis(prediction, analysisQuery, lang);
+      setAnalysisResult(result);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `FutureForecast ${prediction.year}: ${prediction.title}`,
+      text: `${prediction.summary}\n\nVisualized by FutureForecast AI Oracle. Category: ${prediction.category}.`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        const textToCopy = `${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`;
+        await navigator.clipboard.writeText(textToCopy);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
     }
   };
 
   return (
-    <div className="glass rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative animate-in fade-in slide-in-from-bottom-6 duration-1000">
-      <div className="scan-line animate-scan" />
-      
-      <div className="relative group">
+    <div className="glass-panel rounded-xl border border-white/5 overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <div className="relative h-[600px] bg-black overflow-hidden group">
         {imgUrl ? (
-          <div className="relative w-full overflow-hidden">
-            <div className="h-96 md:h-[32rem] w-full overflow-hidden">
-                <img src={imgUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Future visualization" />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
-            </div>
-            <div className="absolute top-6 right-6 flex gap-3">
-              <button onClick={handleDownload} className="p-3 bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-white/10 text-cyan-400 hover:text-white transition-all shadow-xl group/btn">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              </button>
-            </div>
-            <div className="absolute bottom-6 left-6 right-6 lg:left-10 lg:right-10 z-20">
-               <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                     <span className="text-[9px] font-orbitron font-bold text-cyan-400 bg-cyan-500/10 px-4 py-1 rounded-full border border-cyan-500/20 uppercase tracking-[0.3em]">Neural Mod Active</span>
-                     {isEditingImg && <span className="text-[9px] font-orbitron text-cyan-500 animate-pulse uppercase tracking-widest">Re-sequencing...</span>}
-                     {errorMsg && <span className="text-[9px] font-orbitron text-red-500 uppercase bg-red-500/10 px-3 py-1 rounded-full animate-bounce">{errorMsg}</span>}
-                  </div>
-                  <div className="flex gap-2 p-1.5 bg-zinc-950/60 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl focus-within:border-cyan-500/50 transition-all">
-                    <input 
-                      type="text" 
-                      placeholder={lang === 'sk' ? "Uprav scénu..." : "Edit scene..."}
-                      value={editPrompt}
-                      onChange={(e) => setEditPrompt(e.target.value)}
-                      className="flex-1 bg-transparent px-5 py-3 text-sm text-white placeholder:text-zinc-500 outline-none"
-                    />
-                    <button onClick={handleImageGen} className="px-6 py-2 bg-cyan-500 text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_15px_rgba(34,211,238,0.3)]">
-                      {lang === 'sk' ? 'Upraviť' : 'Edit'}
-                    </button>
-                  </div>
+          <>
+            <img src={imgUrl} className={`w-full h-full object-cover transition-transform duration-1000 ${isEditingImg ? 'scale-110 blur-sm opacity-60' : 'group-hover:scale-105'}`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#010409] via-[#010409]/10 to-transparent" />
+            
+            {isEditingImg && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
+                <div className="absolute inset-0 bg-cyan-500/10 animate-scan pointer-events-none" />
+                <div className="relative z-30 flex flex-col items-center">
+                  <div className="w-20 h-20 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-8 shadow-[0_0_40px_rgba(6,182,212,0.4)]" />
+                  <span className="text-cyan-400 font-orbitron font-black tracking-[0.6em] text-[14px] uppercase animate-pulse">
+                    Neural Re-Processing...
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            <div className={`absolute bottom-10 left-10 right-10 transition-all duration-500 ${isEditingImg ? 'opacity-30 pointer-events-none scale-95' : 'opacity-100'}`}>
+               <div className="flex gap-4 p-2 bg-[#010409]/80 border border-white/10 rounded-xl backdrop-blur-md">
+                 <input 
+                  type="text" 
+                  value={editPrompt}
+                  disabled={isEditingImg}
+                  onChange={(e) => setEditPrompt(e.target.value)}
+                  placeholder="Neural Command for Visualization..."
+                  className="flex-1 bg-transparent px-6 py-4 text-sm font-bold outline-none placeholder:text-zinc-600 disabled:opacity-50"
+                 />
+                 <button onClick={handleImageEdit} disabled={isEditingImg} className="px-10 py-4 bg-cyan-500 text-black font-black text-[10px] tracking-widest rounded uppercase hover:bg-white transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                   {isEditingImg ? 'RE-CALCULATING...' : 'RE-RENDER'}
+                 </button>
                </div>
             </div>
-          </div>
+          </>
         ) : (
-          <button onClick={handleImageGen} disabled={isGeneratingImg || (!canGenerateImage && !isPro)} className={`w-full h-80 flex flex-col items-center justify-center gap-4 transition-all border-b border-white/5 bg-white/5 hover:bg-white/10`}>
-            {isGeneratingImg ? <div className="animate-spin w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full" /> : <div className="text-center"><span className="text-xs font-bold text-cyan-400 uppercase tracking-[0.3em] block">{t.visualize}</span></div>}
-          </button>
+          <div className="h-full flex flex-col items-center justify-center bg-zinc-950/50 border-b border-white/5">
+             <button onClick={handleImageGen} disabled={isGeneratingImg} className="flex flex-col items-center gap-4 group">
+                <div className="p-10 rounded-full border border-cyan-500/20 bg-cyan-500/5 group-hover:scale-110 transition-transform">
+                  <svg className="w-12 h-12 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" strokeWidth="1.5"/></svg>
+                </div>
+                <span className="text-cyan-500 font-orbitron font-black tracking-[0.5em] text-[12px] uppercase">
+                  {isGeneratingImg ? 'GENERATING VECTORS...' : 'INITIALIZE VISUALIZATION'}
+                </span>
+             </button>
+          </div>
         )}
       </div>
 
-      <div className="p-8 lg:p-14">
-        <div className="flex flex-col lg:flex-row justify-between items-start gap-10 mb-12">
+      <div className="p-16">
+        <div className="flex justify-between items-start gap-12 mb-16">
           <div className="flex-1">
-            <div className="flex items-center gap-4 mb-8">
-              <span className="text-[10px] font-bold bg-cyan-500 text-black px-4 py-1.5 rounded-full uppercase tracking-tighter">{t.categories[prediction.category]}</span>
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest bg-white/5 px-4 py-1.5 rounded-full border border-white/5">Target: {prediction.year}</span>
+            <div className="flex items-center gap-4 mb-10">
+               <span className="px-5 py-1.5 bg-cyan-500 text-black font-orbitron font-black text-[10px] tracking-widest uppercase rounded-full">
+                 {prediction.category}
+               </span>
+               <span className="text-zinc-600 font-mono text-[11px] font-black uppercase">Fid: {prediction.probability}%</span>
             </div>
-            <h3 className="text-5xl lg:text-6xl font-orbitron font-bold text-white leading-[1.1] neon-glow">{prediction.title}</h3>
+            <h3 className="text-8xl font-orbitron font-black tracking-tighter text-white mb-10 text-glow leading-[0.9]">
+              {prediction.title}
+            </h3>
+            <p className="text-4xl text-zinc-400 font-bold leading-tight max-w-5xl italic border-l-4 border-cyan-500 pl-10 py-4 bg-cyan-500/5">
+              "{prediction.summary}"
+            </p>
           </div>
-          <div className="bg-cyan-500/5 p-8 rounded-[2.5rem] border border-cyan-500/20 min-w-[160px] text-center backdrop-blur-xl">
-            <div className="text-4xl font-orbitron font-bold text-cyan-400">{prediction.probability}%</div>
-            <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-[0.2em] mt-2">{t.probabilityLabel}</div>
+          
+          <div className="text-right">
+             <div className="text-[10px] font-orbitron font-black text-zinc-600 uppercase mb-4 tracking-[0.4em]">Intensity</div>
+             <div className={`text-6xl font-orbitron font-black ${prediction.impactLevel === 'Critical' ? 'text-red-500' : 'text-cyan-400'}`}>
+                {prediction.impactLevel.toUpperCase()}
+             </div>
           </div>
         </div>
 
-        <div className="relative mb-16 group">
-          <div className="absolute -left-6 top-0 bottom-0 w-1.5 bg-gradient-to-b from-cyan-500 to-transparent rounded-full" />
-          <p className="text-zinc-300 leading-relaxed italic text-2xl lg:text-3xl pl-6 py-4">"{prediction.summary}"</p>
-          <button onClick={handlePlayAudio} disabled={isPlayingAudio} className={`absolute -right-4 top-1/2 -translate-y-1/2 p-5 rounded-full glass border border-cyan-500/30 text-cyan-400 hover:scale-110 transition-all ${isPlayingAudio ? 'animate-pulse bg-cyan-500/20' : ''}`}>
-             <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" /></svg>
-          </button>
-        </div>
+        {/* Neural Analysis Section */}
+        <div className="mb-20 glass-panel p-10 rounded-2xl border border-cyan-500/10">
+           <div className="flex items-center gap-4 mb-8">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              <h4 className="text-[12px] font-orbitron font-black text-cyan-400 tracking-[0.5em] uppercase">DEEP NEURAL INSIGHT</h4>
+           </div>
+           
+           {!analysisResult && (
+             <div className="flex gap-4">
+                <input 
+                  type="text" 
+                  value={analysisQuery}
+                  onChange={(e) => setAnalysisQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleDeepAnalysis()}
+                  placeholder="Ask the Oracle about specific temporal consequences..."
+                  className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm font-bold focus:border-cyan-500/50 outline-none transition-all"
+                />
+                <button 
+                  onClick={handleDeepAnalysis} 
+                  disabled={isAnalyzing || !analysisQuery.trim()}
+                  className="px-8 bg-cyan-500 text-black font-orbitron font-black text-[10px] tracking-widest rounded-xl hover:bg-white disabled:opacity-50 transition-all"
+                >
+                  {isAnalyzing ? "THINKING..." : "QUERY"}
+                </button>
+             </div>
+           )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
-          <div className="lg:col-span-7">
-             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
-              <h4 className="text-[12px] font-orbitron font-bold text-cyan-400 uppercase tracking-[0.4em] flex items-center gap-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
-                {t.globalImpact}
-              </h4>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {prediction.regionalImpact.map((impact, idx) => (
-                <div key={idx} onClick={() => setActiveRegion(impact)} className="p-6 bg-white/[0.03] rounded-[2rem] border border-white/5 hover:border-cyan-500/40 hover:bg-white/[0.06] transition-all cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="text-sm font-orbitron font-bold text-white uppercase tracking-wider">{impact.region}</span>
-                    <span className="text-xs font-bold text-cyan-400 font-mono">{impact.value}%</span>
-                  </div>
-                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-cyan-500" style={{ width: `${impact.value}%` }} />
-                  </div>
+           {isAnalyzing && (
+             <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in">
+                <div className="w-12 h-12 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mb-6" />
+                <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.3em]">Processing complex temporal vectors...</p>
+             </div>
+           )}
+
+           {analysisResult && (
+             <div className="animate-in slide-in-from-top-4 duration-700">
+                <div className="text-zinc-300 text-lg leading-relaxed font-bold bg-cyan-500/5 p-8 rounded-xl border border-cyan-500/10 mb-6 whitespace-pre-wrap">
+                   {analysisResult}
                 </div>
-              ))}
-            </div>
+                <button onClick={() => setAnalysisResult(null)} className="text-[10px] font-orbitron font-black text-cyan-500/50 hover:text-cyan-500 tracking-[0.4em] uppercase">
+                   RESET_ANALYSIS_CHANNEL
+                </button>
+             </div>
+           )}
+        </div>
+
+        {/* Prediction Sources / Neural Grounding */}
+        {prediction.sources && prediction.sources.length > 0 && (
+          <div className="mb-16 border-t border-white/5 pt-10">
+             <h4 className="text-[12px] font-orbitron font-black text-white/40 tracking-[0.5em] uppercase mb-8">{t.sourcesTitle}</h4>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {prediction.sources.map((source, idx) => (
+                  <a 
+                    key={idx} 
+                    href={source.uri} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="group glass-panel p-6 rounded-xl border border-white/5 hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all flex items-center gap-4"
+                  >
+                    <div className="p-3 rounded-lg bg-white/5 text-cyan-500 group-hover:scale-110 transition-transform">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" strokeWidth="1.5"/></svg>
+                    </div>
+                    <div className="overflow-hidden">
+                      <div className="text-[11px] font-orbitron font-black text-white truncate mb-1">{source.title}</div>
+                      <div className="text-[9px] font-mono text-zinc-500 truncate">{source.uri}</div>
+                    </div>
+                  </a>
+                ))}
+             </div>
           </div>
-          <div className="lg:col-span-5 bg-white/[0.01] rounded-[2.5rem] border border-white/5 p-8">
-            <TaskList predictionId={predictionId} lang={lang} />
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-16">
+          <div className="lg:col-span-7">
+             <div className="flex justify-between items-center mb-10 border-b border-white/5 pb-6">
+                <h4 className="text-[14px] font-orbitron font-black tracking-[0.4em] text-white">REGIONAL IMPACTS</h4>
+                <div className="flex gap-2">
+                  {['none', 'asc', 'desc'].map(s => (
+                    <button key={s} onClick={() => setSortOrder(s as any)} className={`px-4 py-1.5 text-[9px] font-black border transition-colors ${sortOrder === s ? 'bg-cyan-500 text-black border-cyan-500' : 'text-zinc-600 border-white/5 hover:border-white/10'}`}>
+                      {s.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {sortedRegionalImpact.map((impact, i) => (
+                  <div key={i} className="p-8 bg-white/[0.015] border border-white/5 rounded hover:border-cyan-500/30 transition-colors">
+                     <div className="flex justify-between mb-4">
+                        <span className="text-[12px] font-orbitron font-black text-white">{impact.region.toUpperCase()}</span>
+                        <span className="text-cyan-400 font-mono font-black">{impact.value}%</span>
+                     </div>
+                     <div className="h-1 w-full bg-white/5 overflow-hidden">
+                        <div className="h-full bg-cyan-500 shadow-[0_0_10px_#06b6d4]" style={{ width: `${impact.value}%` }} />
+                     </div>
+                  </div>
+                ))}
+             </div>
+          </div>
+          
+          <div className="lg:col-span-5">
+             <TaskList predictionId={prediction.id} lang={lang} />
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-10 pt-12 border-t border-white/5">
-          <div className="flex gap-4">
-             <button onClick={handleSaveToVault} disabled={isSaved} className={`px-10 py-5 rounded-2xl text-xs font-bold font-orbitron uppercase tracking-[0.3em] transition-all border ${isSaved ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}>
-               {isSaved ? "SAVED" : t.saveVault}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-10 pt-16 border-t border-white/5">
+          <div className="flex gap-6 relative">
+             <button onClick={() => { onSave && onSave(prediction); setIsSaved(true); }} disabled={isSaved} className={`px-12 py-5 border font-orbitron font-black text-[12px] tracking-[0.5em] transition-all ${isSaved ? 'bg-white/5 text-zinc-600 border-transparent' : 'border-white/10 text-white hover:bg-white/10'}`}>
+               {isSaved ? "COMMITTED" : "COMMIT TO VAULT"}
              </button>
-             <button className="px-10 py-5 bg-white text-black hover:bg-cyan-500 rounded-2xl text-xs font-bold font-orbitron uppercase tracking-[0.3em] transition-all">{t.shareVision}</button>
+             <div className="relative group">
+               <button onClick={handlePlayAudio} className={`p-5 border transition-all ${audioError ? 'border-red-500/50 text-red-500' : 'border-white/10 text-cyan-400 hover:bg-cyan-500 hover:text-black'}`}>
+                  {isPlayingAudio ? (
+                    <div className="flex gap-1">
+                      <div className="w-1 h-4 bg-current animate-pulse" />
+                      <div className="w-1 h-6 bg-current animate-pulse delay-75" />
+                      <div className="w-1 h-4 bg-current animate-pulse delay-150" />
+                    </div>
+                  ) : (
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" /></svg>
+                  )}
+               </button>
+               {audioError && (
+                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-4 py-2 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest whitespace-nowrap rounded animate-in fade-in slide-in-from-bottom-2">
+                   {lang === 'sk' ? "SYNTÉZA ZLYHALA" : "SYNTHESIS FAILED"}
+                 </div>
+               )}
+             </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+             <div className="flex flex-col items-end mr-6">
+                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Temporal Signature</span>
+                <span className="text-[11px] font-mono text-zinc-400 font-bold">NODE_{prediction.id.slice(0, 10)}</span>
+             </div>
+             <button 
+                onClick={handleShare}
+                className="px-8 py-5 border border-white/10 text-white font-orbitron font-black text-[12px] tracking-[0.5em] hover:bg-white/5 transition-all flex items-center gap-4 relative"
+             >
+               {copySuccess ? "LINK_COPIED" : "SHARE"}
+               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+               </svg>
+             </button>
+             <button className="px-12 py-5 bg-white text-black font-orbitron font-black text-[12px] tracking-[0.5em] hover:bg-cyan-500 shadow-xl active:scale-95">SHARE VISION</button>
           </div>
         </div>
       </div>

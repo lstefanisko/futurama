@@ -1,47 +1,19 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FUTURAMA | AI-Powered Future Oracle</title>
+    <title>FutureForecast | Neural Oracle 2100</title>
     
-    <meta name="description" content="Explore the future with FUTURAMA. AI-driven predictions for 2030-2100 using Gemini 1.5 technology. Real-time visualizations and global impact analysis.">
-    <meta name="keywords" content="future predictions, ai oracle, visionary 2050, futurama, gemini ai, technology trends 2050">
+    <!-- SEO / Discoverability -->
+    <meta name="description" content="Witness the year 2100. AI-driven predictions with 99.9% neural accuracy.">
+    <meta name="keywords" content="future predictions, ai oracle, singularity, gemini ai, 2100 predictions">
     
-    <!-- PWA / Web Drivers -->
+    <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#22d3ee">
+    <meta name="theme-color" content="#06b6d4">
     
-    <!-- Open Graph / Social Media -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="FUTURAMA | The AI Oracle of Tomorrow">
-    <meta property="og:description" content="Generate deep scientific predictions for the next century.">
-    <meta property="og:image" content="https://futurama.ai/og-image.jpg">
-    
-    <!-- Google Analytics GA4 (Placeholder) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
-    </script>
-
-    <!-- AdSense (Refined) -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "FUTURAMA",
-      "applicationCategory": "PredictionSoftware",
-      "operatingSystem": "All",
-      "description": "AI-powered future trend explorer and visualizer."
-    }
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -51,43 +23,53 @@
             fontFamily: {
               orbitron: ['Orbitron', 'sans-serif'],
               inter: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
             },
             animation: {
-              'scan': 'scan 4s linear infinite',
-              'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'scan': 'scan 3s linear infinite',
+              'glow-pulse': 'glow-pulse 2s ease-in-out infinite alternate',
             },
             keyframes: {
               scan: {
                 '0%': { transform: 'translateY(-100%)', opacity: 0 },
-                '50%': { opacity: 0.5 },
+                '10%': { opacity: 0.8 },
+                '90%': { opacity: 0.8 },
                 '100%': { transform: 'translateY(1000%)', opacity: 0 },
+              },
+              'glow-pulse': {
+                '0%': { boxShadow: '0 0 5px rgba(6, 182, 212, 0.2)' },
+                '100%': { boxShadow: '0 0 25px rgba(6, 182, 212, 0.6)' }
               }
             }
           }
         }
       }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background-color 0.3s ease; }
-        body.dark { background-color: #050505; color: #fafafa; }
-        body.light { background-color: #f8fafc; color: #0f172a; }
-        .glass { backdrop-filter: blur(20px); background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .light .glass { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0, 0, 0, 0.05); }
-        .neon-glow { text-shadow: 0 0 20px rgba(34, 211, 238, 0.6); }
-        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, #22d3ee, transparent); pointer-events: none; z-index: 10; }
+        :root { --neon: #06b6d4; --bg: #010409; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #f8fafc; overflow-x: hidden; scroll-behavior: smooth; font-size: 16px; }
+        .glass { backdrop-filter: blur(50px); background: rgba(8, 10, 15, 0.8); border: 1px solid rgba(255, 255, 255, 0.03); }
+        .glass-panel { background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .text-glow { text-shadow: 0 0 30px rgba(6, 182, 212, 0.7); }
+        .heading-hero { font-size: clamp(2.5rem, 10vw, 7.5rem); font-weight: 900; line-height: 0.9; letter-spacing: -0.02em; }
+        .pricing-card { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .pricing-card:hover { transform: translateY(-10px); border-color: var(--neon); box-shadow: 0 20px 80px rgba(6, 182, 212, 0.15); }
+        input[type="range"] { -webkit-appearance: none; height: 4px; background: rgba(255,255,255,0.05); border-radius: 5px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--neon); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--neon); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.2); border-radius: 10px; }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "vite": "https://esm.sh/vite@^7.3.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.89.0"
   }
 }
 </script>

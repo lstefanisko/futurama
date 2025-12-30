@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { RegionalImpact, Language } from '../types';
 import { translations } from '../translations';
@@ -78,14 +77,15 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
   return (
     <div className="space-y-6">
       <div className="relative">
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl">
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl overflow-visible">
           {regions.map(r => {
             const impact = getImpact(r.name);
             const val = impact ? impact.value : 0;
             const isActive = isLevelActive(val);
             const isIndividualHover = hoveredRegion === r.id;
+            const isSelected = selectedInfo && impact && selectedInfo.region === impact.region;
             
-            const fillOpacity = isIndividualHover || isActive 
+            const fillOpacity = isIndividualHover || isActive || isSelected
                 ? Math.max(0.4, val / 100 + 0.2) 
                 : Math.max(0.05, val / 250);
             
@@ -93,16 +93,18 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
               <path 
                 key={r.id} 
                 d={r.path} 
-                className="cursor-pointer transition-all duration-500 ease-in-out"
+                className={`cursor-pointer transition-all duration-500 ease-in-out ${isSelected ? 'animate-pulse' : ''}`}
                 fill={`rgba(34, 211, 238, ${fillOpacity})`}
-                stroke={isIndividualHover || isActive ? "rgba(34, 211, 238, 0.8)" : "rgba(148, 163, 184, 0.15)"}
-                strokeWidth={isIndividualHover || isActive ? "0.8" : "0.4"}
+                stroke={isSelected ? "#22d3ee" : (isIndividualHover || isActive ? "rgba(34, 211, 238, 0.8)" : "rgba(148, 163, 184, 0.15)")}
+                strokeWidth={isSelected ? "1.2" : (isIndividualHover || isActive ? "0.8" : "0.4")}
                 strokeLinejoin="round"
                 onMouseEnter={() => setHoveredRegion(r.id)}
                 onMouseLeave={() => setHoveredRegion(null)}
                 onClick={() => impact && setSelectedInfo(impact)}
                 style={{
-                    filter: isIndividualHover || isActive ? 'drop-shadow(0 0 2px rgba(34, 211, 238, 0.3))' : 'none'
+                    filter: isSelected 
+                      ? 'drop-shadow(0 0 5px rgba(34, 211, 238, 0.8))' 
+                      : (isIndividualHover || isActive ? 'drop-shadow(0 0 2px rgba(34, 211, 238, 0.3))' : 'none')
                 }}
               />
             );
@@ -110,15 +112,23 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
         </svg>
 
         {selectedInfo && (
-          <div className="absolute inset-0 z-50 glass rounded-3xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
-             <button onClick={() => setSelectedInfo(null)} className="absolute top-4 right-4 text-zinc-500 hover:text-red-500 transition-colors">
-               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2" strokeLinecap="round"/></svg>
+          <div className="absolute inset-0 z-50 glass rounded-3xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200 shadow-[0_0_50px_rgba(34,211,238,0.1)] border border-cyan-500/30">
+             <button onClick={() => setSelectedInfo(null)} className="absolute top-4 right-4 text-zinc-500 hover:text-cyan-400 transition-colors bg-white/5 p-1 rounded-full">
+               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2" strokeLinecap="round"/></svg>
              </button>
-             <h4 className="text-lg font-orbitron font-bold dark:text-white text-zinc-900 mb-4">{selectedInfo.region}</h4>
-             <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 flex-grow overflow-y-auto pr-2 custom-scrollbar">{selectedInfo.description}</p>
+             <div className="flex items-center gap-2 mb-4">
+               <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+               <h4 className="text-lg font-orbitron font-bold text-white uppercase tracking-tighter">{selectedInfo.region}</h4>
+             </div>
+             <p className="text-sm text-zinc-400 mb-6 flex-grow overflow-y-auto pr-2 custom-scrollbar leading-relaxed">
+               {selectedInfo.description}
+             </p>
              <div className="flex justify-between items-center pt-4 border-t border-white/10">
-               <span className="text-xs font-bold text-zinc-500 uppercase">{t.intensity}</span>
-               <span className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{selectedInfo.value}%</span>
+               <div className="flex flex-col">
+                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{t.intensity}</span>
+                 <span className="text-[10px] text-zinc-600 font-mono">NEURAL_LOAD_INDEX</span>
+               </div>
+               <span className="text-2xl font-orbitron font-bold text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">{selectedInfo.value}%</span>
              </div>
           </div>
         )}

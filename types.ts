@@ -1,4 +1,3 @@
-
 export enum Category {
   TECHNOLOGY = 'TECHNOLOGY',
   SOCIETY = 'SOCIETY',
@@ -52,4 +51,11 @@ export interface PricingPlan {
   period: string;
   features: string[];
   isPopular?: boolean;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  is_pro: boolean;
+  predictions_count: number;
 }

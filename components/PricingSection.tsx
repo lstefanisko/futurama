@@ -11,85 +11,94 @@ interface PricingSectionProps {
 
 const PricingSection: React.FC<PricingSectionProps> = ({ lang, user, onPlanSelected }) => {
   const t = translations[lang];
-  const [currency, setCurrency] = useState<Currency>(lang === 'ja' ? 'JPY' : lang === 'zh' ? 'CNY' : lang === 'sk' || lang === 'de' ? 'EUR' : 'USD');
+  const [currency, setCurrency] = useState<Currency>(lang === 'sk' ? 'EUR' : 'USD');
 
   const currencies: { code: Currency; symbol: string }[] = [
     { code: 'USD', symbol: '$' },
     { code: 'EUR', symbol: '€' },
     { code: 'GBP', symbol: '£' },
     { code: 'JPY', symbol: '¥' },
-    { code: 'CNY', symbol: '¥' },
   ];
 
   const plans: PricingPlan[] = [
     {
       id: 'basic',
-      name: lang === 'en' ? 'Explorer' : t.categories.SOCIETY,
-      description: 'Entry-level simulation access.',
+      name: 'GUEST NODE',
+      description: 'Foundational entry to temporal labs.',
       price: { USD: '0', EUR: '0', GBP: '0', JPY: '0', CNY: '0' },
-      period: t.perMonth,
-      features: ['Basic Predictions', 'Global Impact Map', '1 AI Visualization/mo']
+      period: '/free',
+      features: ['Standard Predictions', 'Timeline 2045', 'Public Archive Access', 'Standard Accuracy']
     },
     {
       id: 'pro',
-      name: 'Visionary',
-      description: 'Full temporal resolution.',
+      name: 'VISIONARY PRO',
+      description: 'Maximum temporal resolution. No limits.',
       price: { USD: '29', EUR: '27', GBP: '23', JPY: '4200', CNY: '210' },
       period: t.perMonth,
       isPopular: true,
-      features: ['Unlimited 2100+ Access', 'Full Neural Audio', 'Deep Data Grounding', 'Priority Rendering']
+      features: ['Full 2100 Timeline', 'AI Image Generation', 'Neural TTS Output', 'Grounding Data Search', 'Encrypted Vault Storage']
     },
     {
       id: 'enterprise',
-      name: 'Oracle',
-      description: 'API & Custom Modeling.',
-      price: { USD: '99', EUR: '92', GBP: '78', JPY: '14500', CNY: '715' },
+      name: 'ORACLE CORE',
+      description: 'API integration and singular logic access.',
+      price: { USD: '99', EUR: '95', GBP: '80', JPY: '14500', CNY: '715' },
       period: t.perMonth,
-      features: ['API Access', 'Custom Temporal Bracketing', 'Dedicated Support', 'Whitelabel Export']
+      features: ['White-Label Reports', 'Direct API Access', 'Custom Model Tuning', 'Priority Server Node', '24/7 Neural Support']
     }
   ];
 
-  const handleBuy = (planId: string) => {
-    if (planId === 'basic') { onPlanSelected(planId); return; }
-    window.open('https://www.paypal.com/checkout', '_blank');
-    onPlanSelected(planId);
-  };
-
   return (
-    <section className="py-20 px-6 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <div className="flex justify-center flex-wrap gap-2 mb-10">
-          {currencies.map(curr => (
-            <button 
-              key={curr.code}
-              onClick={() => setCurrency(curr.code)} 
-              className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${currency === curr.code ? 'bg-cyan-500 text-black border-cyan-500' : 'border-white/10 text-zinc-500 hover:text-white'}`}
-            >
-              {curr.symbol} {curr.code}
-            </button>
-          ))}
-        </div>
-        <h2 className="text-5xl font-orbitron font-bold dark:text-white text-zinc-900 mb-6">{t.plans}</h2>
+    <section>
+      <div className="text-center mb-24">
+         <span className="text-cyan-500 font-orbitron font-black tracking-[1em] text-[11px] mb-8 block">SYSTEM_ACCESS_MODELS</span>
+         <h2 className="text-8xl font-orbitron font-black tracking-tighter mb-8">CHOOSE YOUR ACCESS</h2>
+         <div className="flex justify-center gap-2">
+            {currencies.map(c => (
+              <button 
+                key={c.code} 
+                onClick={() => setCurrency(c.code)}
+                className={`px-4 py-2 text-[10px] font-black border transition-colors ${currency === c.code ? 'bg-cyan-500 text-black border-cyan-500' : 'text-zinc-600 border-white/10 hover:border-white/20'}`}
+              >
+                {c.code}
+              </button>
+            ))}
+         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {plans.map((plan) => (
-          <div key={plan.id} className={`glass rounded-[3rem] p-12 border transition-all hover:scale-[1.02] ${plan.isPopular ? 'border-cyan-500 bg-cyan-500/[0.03] shadow-[0_0_50px_rgba(34,211,238,0.1)]' : 'border-white/10'}`}>
-            <h3 className="text-2xl font-orbitron font-bold dark:text-white text-zinc-900 mb-4">{plan.name}</h3>
-            <div className="text-5xl font-bold dark:text-white text-zinc-900 mb-8">
-              {currencies.find(c => c.code === currency)?.symbol}{plan.price[currency]}
-              <span className="text-sm text-zinc-500 font-normal"> {plan.period}</span>
+          <div key={plan.id} className={`pricing-card glass-panel rounded-xl p-12 border flex flex-col ${plan.isPopular ? 'border-cyan-500/50 bg-cyan-500/[0.02]' : 'border-white/5'}`}>
+            {plan.isPopular && (
+              <div className="mb-8 inline-block"><span className="bg-cyan-500 text-black px-4 py-1 text-[10px] font-black tracking-widest uppercase">MOST POWERFUL</span></div>
+            )}
+            <h3 className={`text-3xl font-orbitron font-black mb-4 ${plan.isPopular ? 'text-cyan-400' : 'text-white'}`}>{plan.name}</h3>
+            <p className="text-zinc-500 text-sm mb-12 font-medium">{plan.description}</p>
+            
+            <div className="mb-12 border-y border-white/5 py-8">
+              <span className="text-7xl font-orbitron font-black tracking-tighter">
+                {currencies.find(c => c.code === currency)?.symbol}{plan.price[currency]}
+              </span>
+              <span className="text-zinc-600 font-mono text-sm ml-2 font-bold">{plan.period}</span>
             </div>
-            <ul className="space-y-6 mb-12">
+
+            <ul className="space-y-6 mb-16 flex-grow">
               {plan.features.map((f, i) => (
-                <li key={i} className="flex items-start gap-3 text-zinc-400 text-sm">
-                  <svg className="w-5 h-5 text-cyan-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth="3"/></svg>
+                <li key={i} className="flex items-center gap-4 text-zinc-300 text-sm font-bold group">
+                  <div className={`w-1.5 h-1.5 rounded-full ${plan.isPopular ? 'bg-cyan-500' : 'bg-white/10'} group-hover:scale-150 transition-transform`} />
                   {f}
                 </li>
               ))}
             </ul>
-            <button onClick={() => handleBuy(plan.id)} className={`w-full py-5 rounded-2xl font-orbitron font-bold uppercase text-xs transition-all ${plan.isPopular ? 'bg-cyan-500 text-black' : 'bg-white/5 border border-white/10 text-white'}`}>
-              {plan.price[currency] === '0' ? t.choosePlan : t.payNow}
+
+            <button 
+              onClick={() => {
+                if (plan.id === 'basic') onPlanSelected(plan.id);
+                else window.open('https://www.paypal.com/checkout', '_blank');
+              }} 
+              className={`w-full py-6 font-orbitron font-black text-[12px] tracking-[0.4em] transition-all ${plan.isPopular ? 'bg-cyan-500 text-black hover:bg-white shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-white/5 border border-white/10 hover:border-white/20'}`}
+            >
+              INITIALIZE_LINK
             </button>
           </div>
         ))}
