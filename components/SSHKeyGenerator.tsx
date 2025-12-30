@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
 import { translations } from '../translations';
+import { generateKeyPair } from 'web-ssh-keygen';
 
 interface SSHKeyGeneratorProps {
   lang: Language;
@@ -24,61 +25,23 @@ const SSHKeyGenerator: React.FC<SSHKeyGeneratorProps> = ({ lang, userId }) => {
   const generateSSHKey = async () => {
     setIsGenerating(true);
     try {
-      // Generate RSA key pair using Web Crypto API
-      const keyPair = await window.crypto.subtle.generateKey(
-        {
-          name: "RSA-OAEP",
-          modulusLength: 4096,
-          publicExponent: new Uint8Array([1, 0, 1]),
-          hash: "SHA-256",
-        },
-        true,
-        ["encrypt", "decrypt"]
-      );
-
-      // Export public key
-      const exportedPublicKey = await window.crypto.subtle.exportKey(
-        "spki",
-        keyPair.publicKey
-      );
-      
-      // Export private key
-      const exportedPrivateKey = await window.crypto.subtle.exportKey(
-        "pkcs8",
-        keyPair.privateKey
-      );
-
-      // Convert to PEM format
-      const publicKeyPEM = arrayBufferToPEM(exportedPublicKey, 'PUBLIC KEY');
-      const privateKeyPEM = arrayBufferToPEM(exportedPrivateKey, 'PRIVATE KEY');
-
-      // Convert to SSH format
-      const publicKeySSH = pemToSSH(publicKeyPEM, userId || 'user');
+      // Generate RSA key pair using web-ssh-keygen
+      const { publicKey, privateKey } = await generateKeyPair({
+        alg: 'RSASSA-PKCS1-v1_5',
+        size: 4096,
+        hash: 'SHA-256',
+        name: userId || 'user@futureforecast',
+      });
 
       setKeyPair({
-        publicKey: publicKeySSH,
-        privateKey: privateKeyPEM,
+        publicKey,
+        privateKey,
       });
     } catch (error) {
       console.error('Error generating SSH key:', error);
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const arrayBufferToPEM = (buffer: ArrayBuffer, label: string): string => {
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-    const formatted = base64.match(/.{1,64}/g)?.join('\n') || base64;
-    return `-----BEGIN ${label}-----\n${formatted}\n-----END ${label}-----`;
-  };
-
-  const pemToSSH = (pem: string, comment: string): string => {
-    // For simplicity, we'll create a basic SSH format
-    const base64Key = pem
-      .replace(/-----BEGIN PUBLIC KEY-----/, '')
-      .replace(/-----END PUBLIC KEY-----/, '')
-      .replace(/\s/g, '');
-    return `ssh-rsa ${base64Key} ${comment}@futureforecast`;
   };
 
   const copyToClipboard = async (text: string, isPublic: boolean) => {
