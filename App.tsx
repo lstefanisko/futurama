@@ -9,6 +9,7 @@ import Carousel from './components/Carousel';
 import VisionStream from './components/VisionStream';
 import AuthModal from './components/AuthModal';
 import SSHKeyGenerator from './components/SSHKeyGenerator';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { translations } from './translations';
 import { supabase, fetchUserVault } from './services/supabaseService';
 
@@ -243,6 +244,8 @@ const App: React.FC = () => {
           <SSHKeyGenerator lang={lang} userId={user?.id} />
         </main>
       )}
+      
+      <SpeedInsights />
     </div>
   );
 };
