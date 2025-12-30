@@ -4,6 +4,8 @@ import { Prediction, Language, RegionalImpact } from '../types';
 import { translations } from '../translations';
 import { generateFutureImage, editFutureImage, generateFutureAudio, deepTemporalAnalysis, decode, decodeAudioData } from '../services/geminiService';
 import TaskList from './TaskList';
+import LoadingSpinner from './LoadingSpinner';
+import { ORBITRON_LABEL_SM, ORBITRON_LABEL_MD } from '../utils/styleConstants';
 
 interface PredictionCardProps {
   prediction: Prediction;
@@ -140,8 +142,8 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
                 <div className="absolute inset-0 bg-cyan-500/10 animate-scan pointer-events-none" />
                 <div className="relative z-30 flex flex-col items-center">
-                  <div className="w-20 h-20 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-8 shadow-[0_0_40px_rgba(6,182,212,0.4)]" />
-                  <span className="text-cyan-400 font-orbitron font-black tracking-[0.6em] text-[14px] uppercase animate-pulse">
+                  <LoadingSpinner size="lg" />
+                  <span className="text-cyan-400 font-orbitron font-black tracking-[0.6em] text-[14px] uppercase animate-pulse mt-8">
                     Neural Re-Processing...
                   </span>
                 </div>
@@ -207,7 +209,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
         <div className="mb-20 glass-panel p-10 rounded-2xl border border-cyan-500/10">
            <div className="flex items-center gap-4 mb-8">
               <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <h4 className="text-[12px] font-orbitron font-black text-cyan-400 tracking-[0.5em] uppercase">DEEP NEURAL INSIGHT</h4>
+              <h4 className={`${ORBITRON_LABEL_MD} text-cyan-400`}>DEEP NEURAL INSIGHT</h4>
            </div>
            
            {!analysisResult && (
@@ -232,8 +234,8 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
 
            {isAnalyzing && (
              <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in">
-                <div className="w-12 h-12 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mb-6" />
-                <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.3em]">Processing complex temporal vectors...</p>
+                <LoadingSpinner size="sm" />
+                <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.3em] mt-6">Processing complex temporal vectors...</p>
              </div>
            )}
 

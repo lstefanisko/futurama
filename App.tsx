@@ -8,8 +8,12 @@ import PricingSection from './components/PricingSection';
 import Carousel from './components/Carousel';
 import VisionStream from './components/VisionStream';
 import AuthModal from './components/AuthModal';
+import LoadingSpinner from './components/LoadingSpinner';
+import FeatureCard from './components/FeatureCard';
 import { translations } from './translations';
 import { supabase, fetchUserVault } from './services/supabaseService';
+import { BUTTON_PRIMARY, BUTTON_DANGER } from './utils/styleConstants';
+import { generateId } from './utils/helpers';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('en');
@@ -75,7 +79,7 @@ const App: React.FC = () => {
     setIsLoading(true);
     try {
       const data = await getFuturePrediction(selectedYear, selectedCategory, lang);
-      const newPrediction: Prediction = { ...data, id: Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
+      const newPrediction: Prediction = { ...data, id: generateId(), timestamp: Date.now() };
       setPrediction(newPrediction);
     } catch (error) {
       console.error(error);
@@ -107,9 +111,9 @@ const App: React.FC = () => {
 
           <div className="flex items-center gap-6">
              {user ? (
-               <button onClick={handleLogout} className="px-4 py-2 text-[9px] font-orbitron border border-red-500/20 text-red-500 rounded hover:bg-red-500 hover:text-white transition-all">DISCONNECT</button>
+               <button onClick={handleLogout} className={BUTTON_DANGER}>DISCONNECT</button>
              ) : (
-               <button onClick={() => setIsAuthModalOpen(true)} className="px-6 py-2 bg-cyan-500 text-black font-orbitron font-black text-[10px] rounded hover:bg-white transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)]">CONNECT</button>
+               <button onClick={() => setIsAuthModalOpen(true)} className={BUTTON_PRIMARY}>CONNECT</button>
              )}
              <select value={lang} onChange={(e) => setLang(e.target.value as any)} className="bg-transparent text-[10px] font-black text-zinc-500 uppercase outline-none">
                 {['en', 'sk'].map(l => <option key={l} value={l} className="bg-[#0d1117]">{l}</option>)}
@@ -158,9 +162,8 @@ const App: React.FC = () => {
           {/* Results Area */}
           <section className="lg:col-span-9">
             {isLoading ? (
-              <div className="glass-panel rounded-xl h-[700px] flex flex-col items-center justify-center border border-white/5">
-                <div className="w-16 h-16 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-8 shadow-[0_0_20px_rgba(6,182,212,0.4)]" />
-                <h3 className="text-xl font-orbitron font-black tracking-[0.5em] text-cyan-500 animate-pulse">{t.loading}</h3>
+              <div className="glass-panel rounded-xl h-[700px] flex items-center justify-center border border-white/5">
+                <LoadingSpinner size="md" message={t.loading} />
               </div>
             ) : prediction ? (
               <div className="space-y-12 animate-in fade-in duration-700">
@@ -188,20 +191,20 @@ const App: React.FC = () => {
                 <VisionStream lang={lang} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   <div className="glass-panel p-12 rounded-[2.5rem] border border-white/5 flex flex-col items-center text-center">
-                      <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500 mb-8">
-                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeWidth="2" strokeLinecap="round"/></svg>
-                      </div>
-                      <h5 className="text-2xl font-orbitron font-black text-white mb-4 uppercase">Neural Grounding</h5>
-                      <p className="text-zinc-500 text-sm leading-relaxed max-w-xs">Every prediction is verified across 100+ high-fidelity global research nodes using Google Search integration.</p>
-                   </div>
-                   <div className="glass-panel p-12 rounded-[2.5rem] border border-white/5 flex flex-col items-center text-center">
-                      <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500 mb-8">
-                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.675.337a4 4 0 01-2.58.344l-1.791-.358a2 2 0 01-1.238-1.238l-.358-1.791a4 4 0 01.344-2.58l.337-.675a6 6 0 00.517-3.86l-.477-2.387a2 2 0 00-.547-1.022L10 3" strokeWidth="2" strokeLinecap="round"/></svg>
-                      </div>
-                      <h5 className="text-2xl font-orbitron font-black text-white mb-4 uppercase">Visual Synthesis</h5>
-                      <p className="text-zinc-500 text-sm leading-relaxed max-w-xs">Powered by Gemini 2.5 Flash, generating cinematic visual representations of future architectures and life.</p>
-                   </div>
+                   <FeatureCard
+                     icon={
+                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeWidth="2" strokeLinecap="round"/></svg>
+                     }
+                     title="Neural Grounding"
+                     description="Every prediction is verified across 100+ high-fidelity global research nodes using Google Search integration."
+                   />
+                   <FeatureCard
+                     icon={
+                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.675.337a4 4 0 01-2.58.344l-1.791-.358a2 2 0 01-1.238-1.238l-.358-1.791a4 4 0 01.344-2.58l.337-.675a6 6 0 00.517-3.86l-.477-2.387a2 2 0 00-.547-1.022L10 3" strokeWidth="2" strokeLinecap="round"/></svg>
+                     }
+                     title="Visual Synthesis"
+                     description="Powered by Gemini 2.5 Flash, generating cinematic visual representations of future architectures and life."
+                   />
                 </div>
               </div>
             )}

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseService';
 import { Language } from '../types';
+import { INPUT_BASE, ORBITRON_LABEL_SM } from '../utils/styleConstants';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -60,24 +61,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, lang }) => {
 
           <form onSubmit={handleAuth} className="space-y-6">
             <div>
-              <label className="text-[10px] font-orbitron text-zinc-500 uppercase tracking-widest block mb-2">Email Hash</label>
+              <label className={`${ORBITRON_LABEL_SM} text-zinc-500 block mb-2`}>Email Hash</label>
               <input 
                 type="email" 
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-cyan-500/50 transition-all"
+                className={INPUT_BASE}
                 placeholder="neural@network.io"
               />
             </div>
             <div>
-              <label className="text-[10px] font-orbitron text-zinc-500 uppercase tracking-widest block mb-2">Access Key</label>
+              <label className={`${ORBITRON_LABEL_SM} text-zinc-500 block mb-2`}>Access Key</label>
               <input 
                 type="password" 
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-cyan-500/50 transition-all"
+                className={INPUT_BASE}
                 placeholder="••••••••"
               />
             </div>
