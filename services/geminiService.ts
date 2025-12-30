@@ -15,6 +15,11 @@ const languageMap: Record<Language, string> = {
   zh: '中文'
 };
 
+// Centralized AI client initialization to avoid duplication
+const getAIClient = (): GoogleGenAI => {
+  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+};
+
 export function decode(base64: string): Uint8Array {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -45,7 +50,7 @@ export async function decodeAudioData(
 }
 
 export const getFuturePrediction = async (year: number, category: Category, lang: Language): Promise<Prediction> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
     contents: `Conduct a highly detailed, scientific, and futuristic prediction for the year ${year} in the sector: ${category}. 
@@ -120,7 +125,7 @@ export const getFuturePrediction = async (year: number, category: Category, lang
 };
 
 export const deepTemporalAnalysis = async (prediction: Prediction, query: string, lang: Language): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
     contents: `Analyze this prediction:
@@ -139,7 +144,7 @@ export const deepTemporalAnalysis = async (prediction: Prediction, query: string
 };
 
 export const generateFutureImage = async (prediction: Prediction): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
     contents: {
@@ -155,7 +160,7 @@ export const generateFutureImage = async (prediction: Prediction): Promise<strin
 };
 
 export const editFutureImage = async (base64Image: string, editPrompt: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = getAIClient();
   const base64Data = base64Image.split(',')[1] || base64Image;
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
@@ -171,7 +176,7 @@ export const editFutureImage = async (base64Image: string, editPrompt: string): 
 };
 
 export const generateFutureAudio = async (text: string, lang: Language): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
     contents: [{ parts: [{ text: `Read clearly in ${languageMap[lang]}: ${text}` }] }],

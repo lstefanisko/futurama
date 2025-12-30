@@ -8,8 +8,10 @@ import PricingSection from './components/PricingSection';
 import Carousel from './components/Carousel';
 import VisionStream from './components/VisionStream';
 import AuthModal from './components/AuthModal';
+import LoadingSpinner from './components/LoadingSpinner';
 import { translations } from './translations';
 import { supabase, fetchUserVault } from './services/supabaseService';
+import { BUTTON_PRIMARY, BUTTON_DANGER } from './utils/styleConstants';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('en');
@@ -107,9 +109,9 @@ const App: React.FC = () => {
 
           <div className="flex items-center gap-6">
              {user ? (
-               <button onClick={handleLogout} className="px-4 py-2 text-[9px] font-orbitron border border-red-500/20 text-red-500 rounded hover:bg-red-500 hover:text-white transition-all">DISCONNECT</button>
+               <button onClick={handleLogout} className={BUTTON_DANGER}>DISCONNECT</button>
              ) : (
-               <button onClick={() => setIsAuthModalOpen(true)} className="px-6 py-2 bg-cyan-500 text-black font-orbitron font-black text-[10px] rounded hover:bg-white transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)]">CONNECT</button>
+               <button onClick={() => setIsAuthModalOpen(true)} className={BUTTON_PRIMARY}>CONNECT</button>
              )}
              <select value={lang} onChange={(e) => setLang(e.target.value as any)} className="bg-transparent text-[10px] font-black text-zinc-500 uppercase outline-none">
                 {['en', 'sk'].map(l => <option key={l} value={l} className="bg-[#0d1117]">{l}</option>)}
@@ -158,9 +160,8 @@ const App: React.FC = () => {
           {/* Results Area */}
           <section className="lg:col-span-9">
             {isLoading ? (
-              <div className="glass-panel rounded-xl h-[700px] flex flex-col items-center justify-center border border-white/5">
-                <div className="w-16 h-16 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-8 shadow-[0_0_20px_rgba(6,182,212,0.4)]" />
-                <h3 className="text-xl font-orbitron font-black tracking-[0.5em] text-cyan-500 animate-pulse">{t.loading}</h3>
+              <div className="glass-panel rounded-xl h-[700px] flex items-center justify-center border border-white/5">
+                <LoadingSpinner size="md" message={t.loading} />
               </div>
             ) : prediction ? (
               <div className="space-y-12 animate-in fade-in duration-700">

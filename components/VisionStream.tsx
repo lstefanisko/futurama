@@ -2,6 +2,7 @@
 import React from 'react';
 import { Language } from '../types';
 import { translations } from '../translations';
+import { ORBITRON_LABEL_MD } from '../utils/styleConstants';
 
 interface VisionStreamProps {
   lang: Language;
@@ -23,7 +24,7 @@ const VisionStream: React.FC<VisionStreamProps> = ({ lang }) => {
     <section className="space-y-12 py-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-l-2 border-cyan-500/50 pl-8">
         <div>
-          <h3 className="text-[12px] font-orbitron font-black text-cyan-500 tracking-[0.5em] uppercase mb-4">{t.visionStreamTitle}</h3>
+          <h3 className={`${ORBITRON_LABEL_MD} text-cyan-500 mb-4`}>{t.visionStreamTitle}</h3>
           <p className="text-zinc-500 font-medium max-w-xl">{t.visionStreamDesc}</p>
         </div>
         <div className="flex gap-4">

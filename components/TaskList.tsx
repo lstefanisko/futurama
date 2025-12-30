@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Task, Language } from '../types';
 import { translations } from '../translations';
+import { ORBITRON_LABEL_MD } from '../utils/styleConstants';
 
 interface TaskListProps {
   predictionId: string;
@@ -56,7 +57,7 @@ const TaskList: React.FC<TaskListProps> = ({ predictionId, lang }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h4 className="text-[12px] font-orbitron font-bold text-cyan-400 uppercase tracking-[0.4em] flex items-center gap-3">
+        <h4 className={`${ORBITRON_LABEL_MD} text-cyan-400 flex items-center gap-3`}>
           <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
           {t.tasksTitle}
         </h4>
