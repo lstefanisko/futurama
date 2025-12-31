@@ -63,20 +63,22 @@
 
 ### Local Development
 1. **Install dependencies**: `npm install`
-2. **Set environment variables**: Copy `.env.example` to `.env.local` and configure:
-   - `VITE_GOOGLE_GENAI_API_KEY`: Google Gemini API key
+2. **Set environment variables**: Configure the following environment variables:
+   - `API_KEY`: Google Gemini API key (mapped in vite.config.ts to process.env.API_KEY)
    - `VITE_SUPABASE_URL`: Supabase project URL
    - `VITE_SUPABASE_ANON_KEY`: Supabase anonymous key
-   - `VITE_PADDLE_CLIENT_TOKEN`: Paddle client token
-   - `VITE_PADDLE_ENVIRONMENT_ID`: Paddle environment (1=prod, 2=sandbox)
+   - `VITE_PADDLE_CLIENT_TOKEN`: Paddle client token (accessed via import.meta.env)
+   - `VITE_PADDLE_ENVIRONMENT_ID`: Paddle environment (1=prod, 2=sandbox, accessed via import.meta.env)
 3. **Run development server**: `npm run dev`
 4. **Build for production**: `npm run build`
 5. **Preview production build**: `npm run preview`
 
 ### Environment Variables
-- Environment variables are accessed via `process.env` and defined in `vite.config.ts`
-- Vite requires the `VITE_` prefix for client-side environment variables
-- The Gemini API key uses `API_KEY` (without VITE_ prefix) and is defined separately in vite.config.ts
+- **Two access patterns**: 
+  - `process.env.*`: Variables defined in vite.config.ts (API_KEY, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
+  - `import.meta.env.*`: Variables accessed directly by Vite (VITE_PADDLE_CLIENT_TOKEN, VITE_PADDLE_ENVIRONMENT_ID)
+- **Gemini API key**: Uses `API_KEY` without VITE_ prefix, mapped in vite.config.ts
+- **Note**: The .env.example shows `VITE_GOOGLE_GENAI_API_KEY` but the actual variable used is `API_KEY`
 
 ## Coding Conventions & Best Practices
 
