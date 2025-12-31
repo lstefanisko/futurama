@@ -117,6 +117,13 @@ const Carousel: React.FC<CarouselProps> = ({ category }) => {
     setCurrent(0);
   }, [category]);
 
+  // Preload next image for smoother transitions
+  useEffect(() => {
+    const nextIndex = (current + 1) % slides.length;
+    const img = new Image();
+    img.src = slides[nextIndex].img;
+  }, [current, slides]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent(prev => (prev + 1) % slides.length);
