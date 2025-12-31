@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Prediction, Language, RegionalImpact } from '../types';
 import { translations } from '../translations';
 import { generateFutureImage, editFutureImage, generateFutureAudio, deepTemporalAnalysis, decode, decodeAudioData } from '../services/geminiService';
@@ -46,7 +46,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
     });
   }, [prediction.regionalImpact, sortOrder]);
 
-  const handlePlayAudio = async () => {
+  const handlePlayAudio = useCallback(async () => {
     if (isPlayingAudio) return;
     setIsPlayingAudio(true);
     setAudioError(false);
@@ -70,26 +70,26 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
       setIsPlayingAudio(false);
       setTimeout(() => setAudioError(false), 3000);
     }
-  };
+  }, [isPlayingAudio, prediction.summary, lang]);
 
-  const handleImageGen = async () => {
+  const handleImageGen = useCallback(async () => {
     setIsGeneratingImg(true);
     try {
       const url = await generateFutureImage(prediction);
       if (url) setImgUrl(url);
     } finally { setIsGeneratingImg(false); }
-  };
+  }, [prediction]);
 
-  const handleImageEdit = async () => {
+  const handleImageEdit = useCallback(async () => {
     if (!imgUrl || !editPrompt.trim()) return;
     setIsEditingImg(true);
     try {
       const url = await editFutureImage(imgUrl, editPrompt);
       if (url) setImgUrl(url);
     } finally { setIsEditingImg(false); setEditPrompt(""); }
-  };
+  }, [imgUrl, editPrompt]);
 
-  const handleDeepAnalysis = async () => {
+  const handleDeepAnalysis = useCallback(async () => {
     if (!analysisQuery.trim() || isAnalyzing) return;
     setIsAnalyzing(true);
     try {
@@ -100,9 +100,9 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [analysisQuery, isAnalyzing, prediction, lang]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     const shareData = {
       title: `FutureForecast ${prediction.year}: ${prediction.title}`,
       text: `${prediction.summary}\n\nVisualized by FutureForecast AI Oracle. Category: ${prediction.category}.`,
@@ -126,14 +126,18 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
         console.error('Failed to copy text: ', err);
       }
     }
-  };
+  }, [prediction]);
 
   return (
     <div className="glass-panel rounded-xl border border-white/5 overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
       <div className="relative h-[600px] bg-black overflow-hidden group">
         {imgUrl ? (
           <>
-            <img src={imgUrl} className={`w-full h-full object-cover transition-transform duration-1000 ${isEditingImg ? 'scale-110 blur-sm opacity-60' : 'group-hover:scale-105'}`} />
+            <img 
+              src={imgUrl} 
+              className={`w-full h-full object-cover transition-transform duration-1000 ${isEditingImg ? 'scale-110 blur-sm opacity-60' : 'group-hover:scale-105'}`}
+              loading="lazy"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-[#010409] via-[#010409]/10 to-transparent" />
             
             {isEditingImg && (

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { RegionalImpact, Language } from '../types';
 import { translations } from '../translations';
 
@@ -13,19 +13,39 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const t = translations[lang];
   const [selectedInfo, setSelectedInfo] = useState<RegionalImpact | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
   const rotation = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
 
   // Region coordinates mapping (normalized -1 to 1 for spherical projection)
-  const regionCoords: Record<string, { x: number, y: number, z: number }> = {
+  // Memoize to avoid recreating on every render
+  const regionCoords = useMemo<Record<string, { x: number, y: number, z: number }>>(() => ({
     'North America': { x: -0.5, y: 0.4, z: 0.76 },
     'South America': { x: -0.35, y: -0.4, z: 0.84 },
     'Europe': { x: 0.15, y: 0.5, z: 0.85 },
     'Africa': { x: 0.2, y: -0.1, z: 0.97 },
     'Asia': { x: 0.7, y: 0.4, z: 0.59 },
     'Oceania': { x: 0.8, y: -0.5, z: 0.35 },
-  };
+  }), []);
+
+  // Intersection Observer to detect visibility
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,7 +55,8 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
 
     let animationFrameId: number;
     const particles: { x: number; y: number; z: number }[] = [];
-    const particleCount = 1800;
+    // Reduced particle count for better performance
+    const particleCount = 1200;
     const radius = 140;
 
     const initGlobe = () => {
@@ -76,6 +97,12 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
     };
 
     const draw = (time: number) => {
+      // Skip rendering if not visible
+      if (!isVisible) {
+        animationFrameId = requestAnimationFrame(draw);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
@@ -178,7 +205,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
       window.removeEventListener('mouseup', handleMouseUp);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [data]);
+  }, [data, isVisible]);
 
   return (
     <div className="relative space-y-8 select-none">
@@ -236,4 +263,4 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
   );
 };
 
-export default WorldMap;
+export default React.memo(WorldMap);

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Task, Language } from '../types';
 import { translations } from '../translations';
 
@@ -12,6 +12,7 @@ const TaskList: React.FC<TaskListProps> = ({ predictionId, lang }) => {
   const t = translations[lang];
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskText, setNewTaskText] = useState('');
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Load tasks for this specific prediction scenario
   useEffect(() => {
@@ -23,10 +24,27 @@ const TaskList: React.FC<TaskListProps> = ({ predictionId, lang }) => {
     }
   }, [predictionId]);
 
-  // Save tasks whenever they change
+  // Debounced save tasks whenever they change
   useEffect(() => {
-    localStorage.setItem(`tasks_${predictionId}`, JSON.stringify(tasks));
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Set new timeout to save after 500ms of inactivity
+    saveTimeoutRef.current = setTimeout(() => {
+      localStorage.setItem(`tasks_${predictionId}`, JSON.stringify(tasks));
+    }, 500);
   }, [tasks, predictionId]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,4 +154,4 @@ const TaskList: React.FC<TaskListProps> = ({ predictionId, lang }) => {
   );
 };
 
-export default TaskList;
+export default React.memo(TaskList);

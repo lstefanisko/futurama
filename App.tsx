@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Category, Prediction, Language, UserProfile } from './types';
 import { getFuturePrediction } from './services/geminiService';
 import PredictionCard from './components/PredictionCard';
@@ -53,7 +53,12 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const fetchUserProfile = async (userId: string, email: string) => {
+  const loadVault = useCallback(async (userId: string) => {
+    const data = await fetchUserVault(userId);
+    setVault(data);
+  }, []);
+
+  const fetchUserProfile = useCallback(async (userId: string, email: string) => {
     if (!supabase) return;
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
     if (data) {
@@ -64,23 +69,18 @@ const App: React.FC = () => {
       setUser(newProfile);
     }
     loadVault(userId);
-  };
+  }, [loadVault]);
 
-  const loadVault = async (userId: string) => {
-    const data = await fetchUserVault(userId);
-    setVault(data);
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     if (supabase) {
       await supabase.auth.signOut();
       setUser(null);
       setVault([]);
       setView('explorer');
     }
-  };
+  }, []);
 
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     if (!user?.is_pro && selectedYear > 2045) {
       setView('pricing');
       return;
@@ -95,9 +95,9 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.is_pro, selectedYear, selectedCategory, lang]);
 
-  const handlePaymentSuccess = async (planId: string, orderDetails: any) => {
+  const handlePaymentSuccess = useCallback(async (planId: string, orderDetails: any) => {
     if (user && supabase) {
       try {
         await supabase.from('profiles').update({ is_pro: true, last_payment_id: orderDetails.id }).eq('id', user.id);
@@ -107,7 +107,7 @@ const App: React.FC = () => {
         console.error(err);
       }
     }
-  };
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white/30">

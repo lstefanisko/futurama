@@ -2,6 +2,10 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { Category, Prediction, Language, PredictionSource } from "../types";
 
+// Simple cache for predictions to avoid duplicate API calls
+const predictionCache = new Map<string, { data: Prediction; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 const languageMap: Record<Language, string> = {
   sk: 'slovenčine',
   en: 'English',
@@ -45,6 +49,15 @@ export async function decodeAudioData(
 }
 
 export const getFuturePrediction = async (year: number, category: Category, lang: Language): Promise<Prediction> => {
+  // Create cache key
+  const cacheKey = `${year}-${category}-${lang}`;
+  
+  // Check cache first
+  const cached = predictionCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    return cached.data;
+  }
+
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
@@ -111,12 +124,17 @@ export const getFuturePrediction = async (year: number, category: Category, lang
     throw new Error(lang === 'sk' ? "Chyba syntézy dát." : "Data Synthesis Failure.");
   }
   
-  return { 
+  const result = { 
     ...prediction, 
     year, 
     category, 
     sources: sources.length > 0 ? sources : undefined 
   };
+
+  // Cache the result
+  predictionCache.set(cacheKey, { data: result, timestamp: Date.now() });
+  
+  return result;
 };
 
 export const deepTemporalAnalysis = async (prediction: Prediction, query: string, lang: Language): Promise<string> => {
