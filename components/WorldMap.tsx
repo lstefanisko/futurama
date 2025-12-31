@@ -205,7 +205,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ data, lang, isLoading = false }) =>
       window.removeEventListener('mouseup', handleMouseUp);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [data, isVisible, regionCoords]);
+  }, [data, isVisible]);
 
   return (
     <div className="relative space-y-8 select-none">

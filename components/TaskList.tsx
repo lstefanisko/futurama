@@ -35,14 +35,16 @@ const TaskList: React.FC<TaskListProps> = ({ predictionId, lang }) => {
     saveTimeoutRef.current = setTimeout(() => {
       localStorage.setItem(`tasks_${predictionId}`, JSON.stringify(tasks));
     }, 500);
+  }, [tasks, predictionId]);
 
-    // Cleanup on unmount
+  // Cleanup timeout on unmount
+  useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [tasks, predictionId]);
+  }, []);
 
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
