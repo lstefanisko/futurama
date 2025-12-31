@@ -42,7 +42,12 @@ const VisionStream: React.FC<VisionStreamProps> = ({ lang }) => {
         {nodes.map((node, i) => (
           <div key={i} className="group relative glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-cyan-500/30 transition-all cursor-pointer">
             <div className="aspect-[4/3] relative">
-              <img src={node.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" alt={node.title} />
+              <img 
+                src={node.img} 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" 
+                alt={node.title}
+                loading="lazy"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-80" />
               
               <div className="absolute top-4 left-4">
@@ -69,4 +74,4 @@ const VisionStream: React.FC<VisionStreamProps> = ({ lang }) => {
   );
 };
 
-export default VisionStream;
+export default React.memo(VisionStream);

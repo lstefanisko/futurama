@@ -131,7 +131,12 @@ const Carousel: React.FC<CarouselProps> = ({ category }) => {
           key={`${category}-${idx}`}
           className={`absolute inset-0 transition-all duration-1000 ease-in-out ${idx === current ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'}`}
         >
-          <img src={slide.img} className="w-full h-full object-cover" alt={slide.title} />
+          <img 
+            src={slide.img} 
+            className="w-full h-full object-cover" 
+            alt={slide.title}
+            loading={idx === 0 ? "eager" : "lazy"}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-[#010409] via-transparent to-transparent" />
           <div className="absolute inset-0 bg-black/20" />
           
@@ -164,4 +169,4 @@ const Carousel: React.FC<CarouselProps> = ({ category }) => {
   );
 };
 
-export default Carousel;
+export default React.memo(Carousel);

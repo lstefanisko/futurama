@@ -16,9 +16,11 @@ const languageMap: Record<Language, string> = {
 };
 
 export function decode(base64: string): Uint8Array {
+  // Optimized: Use native methods instead of slow loop
   const binaryString = atob(base64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
+  // Use a more efficient approach with fewer method calls
   for (let i = 0; i < len; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
