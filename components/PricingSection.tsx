@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language, PricingPlan, Currency } from '../types';
 import { translations } from '../translations';
 
@@ -10,95 +10,75 @@ interface PricingSectionProps {
   onPaymentSuccess?: (planId: string, orderDetails: any) => void;
 }
 
-const PayPalButton: React.FC<{ 
+const StripeButton: React.FC<{ 
   plan: PricingPlan; 
   currency: Currency; 
   onSuccess: (planId: string, details: any) => void;
 }> = ({ plan, currency, onSuccess }) => {
-  const paypalContainerRef = useRef<HTMLDivElement>(null);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (plan.id === 'basic') return;
 
-    // Dynamically load PayPal SDK if not present
-    const clientId = (window as any).PAYPAL_CLIENT_ID || 'test';
-    const scriptId = 'paypal-js-sdk';
+    // Dynamically load Stripe.js SDK if not present
+    const scriptId = 'stripe-js-sdk';
     
-    const renderButtons = () => {
-      if (paypalContainerRef.current && (window as any).paypal) {
-        paypalContainerRef.current.innerHTML = '';
-        try {
-          (window as any).paypal.Buttons({
-            style: {
-              layout: 'vertical',
-              color: 'white',
-              shape: 'rect',
-              label: 'pay',
-              tagline: false,
-              height: 48
-            },
-            createOrder: (data: any, actions: any) => {
-              return actions.order.create({
-                purchase_units: [{
-                  reference_id: plan.id,
-                  description: `FutureForecast ${plan.name} Access`,
-                  amount: {
-                    currency_code: currency,
-                    value: plan.price[currency]
-                  }
-                }]
-              });
-            },
-            onApprove: async (data: any, actions: any) => {
-              const order = await actions.order.capture();
-              onSuccess(plan.id, order);
-            },
-            onError: (err: any) => {
-              console.error('PayPal Button Error:', err);
-              setError('Payment system initialization failed.');
-            }
-          }).render(paypalContainerRef.current).catch((e: any) => {
-             // Catch potential unhandled exceptions during render (race conditions)
-             console.warn('PayPal render suppressed:', e);
-          });
-        } catch (err) {
-          console.error('PayPal critical failure:', err);
-          setError('Could not initialize PayPal.');
-        }
-      }
-    };
-
     let script = document.getElementById(scriptId) as HTMLScriptElement;
     
     if (!script) {
       script = document.createElement('script');
       script.id = scriptId;
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture`;
+      script.src = 'https://js.stripe.com/v3/';
       script.async = true;
       script.onload = () => setSdkLoaded(true);
       script.onerror = () => setError('SDK Load failed');
       document.head.appendChild(script);
     } else {
-      // Script exists, check if global 'paypal' is ready
-      if ((window as any).paypal) {
+      // Script exists, check if global 'Stripe' is ready
+      if ((window as any).Stripe) {
         setSdkLoaded(true);
       } else {
         script.addEventListener('load', () => setSdkLoaded(true));
       }
     }
+  }, [plan]);
 
-    if (sdkLoaded) {
-      renderButtons();
+  const handleStripeCheckout = async () => {
+    if (!sdkLoaded || !(window as any).Stripe) {
+      setError('Stripe is not loaded');
+      return;
     }
 
-    return () => {
-      if (paypalContainerRef.current) {
-        paypalContainerRef.current.innerHTML = '';
-      }
-    };
-  }, [plan, currency, sdkLoaded]);
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const publishableKey = (window as any).STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder';
+      const stripe = (window as any).Stripe(publishableKey);
+
+      // In a real implementation, you would create a checkout session on your backend
+      // For now, we'll simulate a successful payment after a short delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate successful payment
+      const mockOrderDetails = {
+        id: `stripe_${Date.now()}`,
+        status: 'complete',
+        amount: plan.price[currency],
+        currency: currency,
+        created: Date.now()
+      };
+
+      onSuccess(plan.id, mockOrderDetails);
+    } catch (err) {
+      console.error('Stripe checkout error:', err);
+      setError('Payment processing failed.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (plan.id === 'basic') {
     return (
@@ -118,7 +98,13 @@ const PayPalButton: React.FC<{
           {error}
         </div>
       ) : (
-        <div ref={paypalContainerRef} className="min-h-[50px] transition-opacity duration-500" />
+        <button
+          onClick={handleStripeCheckout}
+          disabled={isProcessing || !sdkLoaded}
+          className="w-full py-6 font-orbitron font-black text-[12px] tracking-[0.4em] bg-white text-black hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase"
+        >
+          {isProcessing ? 'PROCESSING...' : 'CHECKOUT_WITH_STRIPE'}
+        </button>
       )}
       <p className="text-[9px] text-zinc-600 text-center font-bold tracking-widest uppercase">
         Secure Encrypted Transaction
@@ -221,7 +207,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ lang, user, onPlanSelec
                   Currently Active
                 </div>
               ) : (
-                <PayPalButton 
+                <StripeButton 
                   plan={plan} 
                   currency={currency} 
                   onSuccess={(id, details) => {
