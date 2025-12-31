@@ -78,7 +78,6 @@
   - `process.env.*`: Variables defined in vite.config.ts (API_KEY, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
   - `import.meta.env.*`: Variables accessed directly by Vite (VITE_PADDLE_CLIENT_TOKEN, VITE_PADDLE_ENVIRONMENT_ID)
 - **Gemini API key**: Uses `API_KEY` without VITE_ prefix, mapped in vite.config.ts
-- **Note**: The .env.example shows `VITE_GOOGLE_GENAI_API_KEY` but the actual variable used is `API_KEY`
 
 ## Coding Conventions & Best Practices
 
