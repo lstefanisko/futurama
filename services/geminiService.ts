@@ -119,6 +119,16 @@ export const getFuturePrediction = async (year: number, category: Category, lang
   };
 };
 
+export const getPlanSalesPitch = async (planName: string, lang: Language): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const response = await ai.models.generateContent({
+    model: "gemini-flash-lite-latest",
+    contents: `Generate a short (10 words max), futuristic, high-tech sales pitch for a membership plan called "${planName}". 
+    The pitch should sound like it's from a neural AI in the year 2100. Language: ${languageMap[lang]}.`,
+  });
+  return response.text?.trim() || "SYNC_COMPLETE";
+};
+
 export const deepTemporalAnalysis = async (prediction: Prediction, query: string, lang: Language): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const response = await ai.models.generateContent({

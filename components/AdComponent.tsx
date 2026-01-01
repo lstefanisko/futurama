@@ -8,15 +8,16 @@ interface AdComponentProps {
 const AdComponent: React.FC<AdComponentProps> = ({ slot }) => {
   useEffect(() => {
     try {
-      // @ts-ignore
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      }
     } catch (e) {
-      console.error('AdSense error', e);
+      console.warn('AdSense blocked or failed', e);
     }
   }, []);
 
   return (
-    <div className="ad-container">
+    <div className="ad-container my-8 opacity-40 hover:opacity-100 transition-opacity">
       <ins className="adsbygoogle"
            style={{ display: 'block' }}
            data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
