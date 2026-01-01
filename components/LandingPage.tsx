@@ -12,15 +12,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     let animationFrameId: number;
-    let particles: { x: number; y: number; z: number; originX: number; originY: number }[] = [];
+    let particles: { originX: number; originY: number }[] = [];
     
-    const ROWS = 55; // Hustejšia sieť
-    const COLS = 85;
-    const SPACING = 22;
+    const ROWS = 40;
+    const COLS = 60;
+    const SPACING = 35;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -33,9 +33,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
       for (let i = 0; i < ROWS; i++) {
         for (let j = 0; j < COLS; j++) {
           particles.push({
-            x: 0,
-            y: 0,
-            z: 0,
             originX: (j - COLS / 2) * SPACING,
             originY: (i - ROWS / 2) * SPACING
           });
@@ -44,8 +41,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouse.current.x = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
-      mouse.current.y = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+      mouse.current.x = (e.clientX - window.innerWidth / 2);
+      mouse.current.y = (e.clientY - window.innerHeight / 2);
     };
 
     const draw = (time: number) => {
@@ -54,35 +51,39 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
       
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      const fov = 700;
+      const fov = 1200;
 
-      particles.forEach((p, i) => {
+      particles.forEach((p, idx) => {
         const dist = Math.sqrt(p.originX * p.originX + p.originY * p.originY);
-        // Vyššia amplitúda a frekvencia vĺn pre "výraznejší pohyb"
-        const wave1 = Math.sin(dist * 0.015 - time * 0.003) * 70; 
-        const wave2 = Math.cos(p.originX * 0.008 + time * 0.002) * 40;
+        const wave = Math.sin(dist * 0.005 - time * 0.002) * 50;
         
-        const mouseDist = Math.sqrt(
-          Math.pow(p.originX - mouse.current.x * 600, 2) + 
-          Math.pow(p.originY - mouse.current.y * 600, 2)
-        );
-        const interaction = Math.max(0, 150 - mouseDist * 0.4) * 2;
+        const dx = p.originX - mouse.current.x * 0.3;
+        const dy = p.originY - mouse.current.y * 0.3;
+        const mDist = Math.sqrt(dx * dx + dy * dy);
+        const interaction = Math.max(0, 150 - mDist * 0.25) * 2;
 
-        const z = wave1 + wave2 + interaction + 200;
+        const z = wave + interaction + 500;
         const scale = fov / (fov + z);
         
         const x = centerX + p.originX * scale;
-        const y = centerY + p.originY * scale + interaction * 0.3;
+        const y = centerY + p.originY * scale;
 
-        const alpha = Math.min(1, (scale * 0.9) * (1 - dist / 1800));
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+        // Accent coloring for some particles
+        if (idx % 25 === 0) {
+          ctx.fillStyle = '#00f3ff';
+          ctx.globalAlpha = scale * 0.8;
+        } else {
+          ctx.fillStyle = '#fff';
+          ctx.globalAlpha = scale * 0.4;
+        }
         
-        const size = Math.max(0.6, scale * 2.5);
+        const size = Math.max(0.4, scale * 1.5);
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fill();
       });
-
+      
+      ctx.globalAlpha = 1.0;
       animationFrameId = requestAnimationFrame(draw);
     };
 
@@ -100,34 +101,46 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
 
   return (
     <div className="fixed inset-0 bg-black z-[999] flex flex-col items-center justify-center overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
+      <canvas 
+        ref={canvasRef} 
+        className="absolute inset-0 pointer-events-none blur-[1px] opacity-80" 
+      />
       
-      <div className="absolute top-10 left-10 flex items-center gap-4 mix-blend-difference">
-         <div className="w-12 h-[1px] bg-white opacity-60" />
-         <span className="text-[9px] font-orbitron font-black tracking-[0.5em] text-white uppercase">Neural Oracle v3.1</span>
+      {/* HUD Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute top-10 left-10 flex gap-4 items-center">
+          <div className="w-8 h-[0.5px] bg-accent"></div>
+          <span className="text-[10px] font-mono tracking-[0.5em] text-accent/80 uppercase">Node_Active: 0x4F2A</span>
+        </div>
+        <div className="absolute bottom-10 right-10 flex flex-col items-end gap-1">
+          <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.4em]">Resonance Level</span>
+          <div className="w-32 h-[2px] bg-white/10 overflow-hidden">
+            <div className="h-full bg-accent w-2/3 animate-pulse"></div>
+          </div>
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center px-6">
-        <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-1000">
-          <span className="px-6 py-2 border border-white/10 text-[10px] font-orbitron font-black tracking-[0.5em] text-white uppercase backdrop-blur-md">
-            ESTABLISHED_2025
+        <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-1000">
+          <span className="px-4 py-1 border-[0.5px] border-accent/30 text-[9px] font-orbitron font-black tracking-[0.6em] text-accent uppercase backdrop-blur-md">
+            ESTABLISHED_2100
           </span>
         </div>
 
-        <div className="space-y-4 mb-16">
-          <h2 className="text-7xl md:text-[12rem] font-orbitron font-black text-white tracking-tighter leading-[0.8] uppercase animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
-            Unlock your<br />
-            <span className="font-thin opacity-30 lowercase italic tracking-[-0.08em]">future growth</span>
+        <div className="mb-16 select-none">
+          <h2 className="text-5xl md:text-8xl font-orbitron font-black text-white tracking-tighter leading-[0.9] uppercase mb-1">
+            UNLOCK YOUR<br />
+            <span className="text-accent text-neon">FUTURE GROWTH</span>
           </h2>
+          <div className="w-24 h-[1px] bg-accent/40 mx-auto mt-8"></div>
         </div>
 
         <button 
           onClick={onEnter}
-          className="group relative px-20 py-10 border border-white/5 hover:border-white transition-all duration-700 overflow-hidden animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500"
+          className="group relative px-12 py-5 neon-btn bg-black/40 backdrop-blur-xl"
         >
-          <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]" />
-          <span className="relative z-10 text-white group-hover:text-black font-orbitron font-black text-[11px] tracking-[0.8em] transition-colors duration-500 uppercase">
-            Initialize Core
+          <span className="relative z-10 text-white group-hover:text-black font-orbitron font-black text-[10px] tracking-[1em] transition-colors duration-500 uppercase">
+            [ INITIALIZE ]
           </span>
         </button>
       </div>

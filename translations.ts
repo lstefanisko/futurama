@@ -1,7 +1,6 @@
-
 import { Category, Language } from './types';
 
-const en = {
+const baseEn = {
   title: "FUTUREFORECAST",
   explorer: "Future Lab",
   pricing: "Tiers",
@@ -11,19 +10,19 @@ const en = {
   sector: "Sector",
   intensity: "Neural Intensity",
   generate: "INVOKE ORACLE",
-  globalImpact: "Deep Regional Analysis",
+  globalImpact: "Regional Matrix",
   impactLegend: "Load Map",
   probabilityLabel: "Neural Fidelity",
   analysisLabel: "Core Logic",
-  sourcesTitle: "Neural Grounding Chunks",
+  sourcesTitle: "Grounding Sources",
   loading: "Accessing Future Node...",
   readyTitle: "NEURO-ORACLE",
-  readyDesc: "Extracting temporal possibilities with unmatched algorithmic precision.",
-  slogan: "AI PREDICTIONS WITH ALGORITHMIC PRECISION UP TO THE YEAR 2100",
+  readyDesc: "Extracting temporal possibilities with algorithmic precision.",
+  slogan: "AI PREDICTIONS WITH PRECISION UP TO THE YEAR 2100",
   visionStreamTitle: "LIVE TEMPORAL STREAM",
   visionStreamDesc: "Real-time visual data nodes from high-probability future branches.",
   shareVision: "Broadcast",
-  downloadImg: "Export Vision",
+  downloadImg: "Export",
   saveVault: "Commit to Vault",
   visualize: "AI Vision",
   proOnly: "Restricted",
@@ -32,14 +31,11 @@ const en = {
   addTaskPlaceholder: "Define objective...",
   noTasks: "Awaiting system objectives.",
   vaultEmpty: "Vault is empty.",
-  plans: "Pricing Structure",
+  plans: "Access Tiers",
   choosePlan: "Initialize",
-  payNow: "Unlock Oracle",
+  payNow: "Unlock Access",
   perMonth: "/mo",
-  sortBy: "Reorder",
-  sortOriginal: "Default",
-  sortAsc: "Ascending",
-  sortDesc: "Descending",
+  usageGuide: "Operational Manual",
   categories: {
     [Category.TECHNOLOGY]: "SINGULARITY",
     [Category.SOCIETY]: "META-SOCIETY",
@@ -47,10 +43,24 @@ const en = {
     [Category.HEALTH]: "BIO-GENETICS",
     [Category.SPACE]: "GALACTIC AXIS",
   },
-  legend: { low: "Minimal", med: "Sustained", high: "Critical", crit: "X-Level" }
+  planDetails: {
+    guest: {
+      desc: "Basic exploration of the immediate future.",
+      usage: "Use the slider up to 2045. View text-based trends and public archives. Ideal for casual observation."
+    },
+    pro: {
+      desc: "Full temporal resolution and synthesis.",
+      usage: "Unlock the 2100 axis. Use 'Visualize' for AI images, 'Play' for Neural TTS, and 'Invoke' for Deep Temporal Analysis."
+    },
+    oracle: {
+      desc: "Maximum fidelity for enterprise and research.",
+      usage: "Priority access to Gemini 3 Pro models. API node connectivity for external systems. Unlimited visual synthesis."
+    }
+  }
 };
 
 const sk = {
+  ...baseEn,
   title: "FUTUREFORECAST",
   explorer: "Laboratórium",
   pricing: "Prístup",
@@ -60,35 +70,32 @@ const sk = {
   sector: "Sektor",
   intensity: "Intenzita",
   generate: "ZVOLAŤ ORÁKULUM",
-  globalImpact: "Regióny",
+  globalImpact: "Regionálna Matrica",
   impactLegend: "Záťaž",
-  probabilityLabel: "Pravdepodobnosť",
+  probabilityLabel: "Fidelita",
   analysisLabel: "Analýza",
-  sourcesTitle: "Overené Časové Uzly",
+  sourcesTitle: "Zdroje",
   loading: "Syntéza Uzlov...",
   readyTitle: "NEURO-ORÁKULUM",
-  readyDesc: "AI predpovede s precíznosťou algoritmu až do roku 2100.",
-  slogan: "AI PREDPOVEDE S PRESNOSŤOU ALGORITMOV AŽ DO ROKU 2100",
+  readyDesc: "Extrakcia časových možností s presnosťou algoritmu.",
+  slogan: "AI PREDPOVEDE S PRECÍZNOSŤOU AŽ DO ROKU 2100",
   visionStreamTitle: "ŽIVÝ PRÚD ČASU",
   visionStreamDesc: "Vizuálne dátové uzly z vysoko pravdepodobných vetiev budúcnosti.",
   shareVision: "Zdieľať",
   downloadImg: "Exportovať",
   saveVault: "Uložiť do Archívu",
   visualize: "AI Vizualizácia",
-  proOnly: "Limitované",
-  yearLimit: "Roky do 2100 vyžadujú Visionary PRO autorizáciu.",
+  proOnly: "Obmedzené",
+  yearLimit: "Prístup k osi 2100 vyžaduje Visionary PRO autorizáciu.",
   tasksTitle: "Cestovná Mapa",
   addTaskPlaceholder: "Definovať cieľ...",
   noTasks: "Systém čaká na ciele.",
   vaultEmpty: "Archív je prázdny.",
-  plans: "Cenník Služieb",
+  plans: "Úrovne Prístupu",
   choosePlan: "Aktivovať",
   payNow: "Odomknúť Orákulum",
   perMonth: "/mes",
-  sortBy: "Radiť",
-  sortOriginal: "Pôvodné",
-  sortAsc: "Vzostupne",
-  sortDesc: "Zostupne",
+  usageGuide: "Operačný Manuál",
   categories: {
     [Category.TECHNOLOGY]: "SINGULARITA",
     [Category.SOCIETY]: "SPOLOČNOSŤ",
@@ -96,10 +103,31 @@ const sk = {
     [Category.HEALTH]: "BIO-GENETIKA",
     [Category.SPACE]: "VESMÍR",
   },
-  legend: { low: "Nízka", med: "Stredná", high: "Vysoká", crit: "Kritická" }
+  planDetails: {
+    guest: {
+      desc: "Základný prieskum blízkej budúcnosti.",
+      usage: "Použite slider do roku 2045. Sledujte textové trendy a verejný archív. Ideálne pre občasných pozorovateľov."
+    },
+    pro: {
+      desc: "Plné časové rozlíšenie a syntéza dát.",
+      usage: "Odomknite os 2100. Použite 'Vizualizovať' pre AI obrazy, 'Prehrať' pre audio a 'Vyvolať' pre hĺbkovú analýzu."
+    },
+    oracle: {
+      desc: "Maximálna presnosť pre firmy a výskum.",
+      usage: "Prioritný prístup k modelom Gemini 3 Pro. API prepojenia pre externé systémy. Neobmedzená vizuálna syntéza."
+    }
+  }
 };
 
-// Fixed the typo: changed 'f' to 'fr' to match the Language type definition
+const de = { ...baseEn, title: "ZUKUNFTSPROGNOSE", explorer: "Zukunftslabor", pricing: "Tarife", perMonth: "/monat", usageGuide: "Handbuch" };
+const pl = { ...baseEn, title: "PROGNOZA PRZYSZŁOŚCI", explorer: "Laboratorium", pricing: "Ceny", perMonth: "/mies", usageGuide: "Instrukcja" };
+const es = { ...baseEn, title: "PRONÓSTICO FUTURO", explorer: "Lab Futuro", pricing: "Planes", perMonth: "/mes", usageGuide: "Manual" };
+const fr = { ...baseEn, title: "PRÉVISIONS FUTURES", explorer: "Lab Futur", pricing: "Tarifs", perMonth: "/mois", usageGuide: "Manuel" };
+const it = { ...baseEn, title: "PREVISIONI FUTURE", explorer: "Lab Futuro", pricing: "Piani", perMonth: "/mese", usageGuide: "Manuale" };
+const ja = { ...baseEn, title: "未来予測", explorer: "ラボ", pricing: "料金", perMonth: "/月", usageGuide: "操作ガイド" };
+const pt = { ...baseEn, title: "PREVISÃO FUTURA", explorer: "Laboratório", pricing: "Planos", perMonth: "/mês", usageGuide: "Manual" };
+const zh = { ...baseEn, title: "未来预测", explorer: "实验室", pricing: "方案", perMonth: "/月", usageGuide: "操作指南" };
+
 export const translations: Record<Language, any> = {
-  en, sk, de: en, pl: en, es: en, fr: en, it: en, ja: en, pt: en, zh: en,
+  en: baseEn, sk, de, pl, es, fr, it, ja, pt, zh
 };
