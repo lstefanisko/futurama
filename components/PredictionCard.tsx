@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Prediction, Language } from '../types';
 import { translations } from '../translations';
 import { generateFutureImage, editFutureImage, generateFutureAudio, deepTemporalAnalysis, decode, decodeAudioData } from '../services/geminiService';
@@ -16,6 +17,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
   const [imgUrl, setImgUrl] = useState<string | null>(prediction.imageUrl || null);
   const [isGeneratingImg, setIsGeneratingImg] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const [editPrompt, setEditPrompt] = useState("");
   const [isEditingImg, setIsEditingImg] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -33,6 +35,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
   const handlePlayAudio = async () => {
     if (isPlayingAudio) return;
     setIsPlayingAudio(true);
+    setAudioError(null);
     try {
       const audioBase64 = await generateFutureAudio(prediction.summary, lang);
       if (audioBase64) {
@@ -48,6 +51,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
       }
     } catch (e) { 
       setIsPlayingAudio(false);
+      setAudioError("Audio synthesis failed.");
     }
   };
 
@@ -56,6 +60,8 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
     try {
       const url = await generateFutureImage(prediction);
       if (url) setImgUrl(url);
+    } catch (err) {
+      console.error(err);
     } finally { setIsGeneratingImg(false); }
   };
 
@@ -69,146 +75,191 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, lang, isPro
   };
 
   return (
-    <div className="glossy-panel rounded-none overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-      <div className="relative h-[550px] bg-zinc-900 overflow-hidden border-b border-accent/20">
+    <div className="glass-panel overflow-hidden reveal-anim border-accent/20">
+      
+      {/* Visual Simulation Frame */}
+      <div className="relative h-[700px] bg-black overflow-hidden border-b border-white/10 group">
         {imgUrl ? (
           <>
-            <img src={imgUrl} className={`w-full h-full object-cover transition-transform duration-1000 ${isEditingImg ? 'scale-110 blur-xl opacity-20' : 'opacity-80'}`} />
+            <img src={imgUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-[2000ms] group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
             
-            <div className="absolute bottom-8 left-8 right-8 flex gap-2">
+            <div className="absolute top-10 left-10 flex items-center gap-5">
+               <div className="w-3 h-3 bg-accent animate-ping rounded-full shadow-[0_0_15px_#00f3ff]" />
+               <span className="text-[12px] font-mono text-white font-black tracking-widest uppercase bg-black/60 px-5 py-2 backdrop-blur-2xl border border-white/10">STREAM_ACTIVE // NEURAL_RENDER</span>
+            </div>
+
+            <div className="absolute bottom-10 left-10 right-10 flex gap-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
                <input 
-                  type="text" 
-                  value={editPrompt}
-                  onChange={(e) => setEditPrompt(e.target.value)}
-                  placeholder="Inject visual parameters..."
-                  className="flex-1 bg-black/80 backdrop-blur-md border border-white/20 px-4 py-3 text-xs font-mono outline-none focus:border-accent transition-all text-white"
+                 type="text" value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)}
+                 placeholder="INJECT PARAMETERS TO MODIFY SIMULATION..."
+                 className="flex-1 bg-black/80 backdrop-blur-3xl border border-white/20 px-8 py-6 text-xs font-mono outline-none focus:border-accent text-white uppercase tracking-widest"
                />
-               <button onClick={async () => {
-                  setIsEditingImg(true);
-                  const url = await editFutureImage(imgUrl, editPrompt);
-                  if (url) setImgUrl(url);
-                  setIsEditingImg(false);
-                  setEditPrompt("");
-               }} className="px-8 py-3 bg-accent text-black font-black text-[10px] tracking-widest uppercase hover:brightness-110 transition-all shadow-[0_0_15px_rgba(0,243,255,0.4)]">
-                 RE-RENDER
+               <button 
+                 onClick={async () => {
+                    setIsEditingImg(true);
+                    const url = await editFutureImage(imgUrl!, editPrompt);
+                    if(url) setImgUrl(url);
+                    setIsEditingImg(false);
+                 }}
+                 className="px-12 py-6 bg-accent text-black font-black text-[11px] tracking-widest uppercase hover:bg-white transition-all shadow-[0_0_30px_rgba(0,243,255,0.4)]"
+               >
+                 {isEditingImg ? 'ADAPTING...' : 'REFRACT_VIEW'}
                </button>
             </div>
           </>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center bg-black/40">
-             <button onClick={handleImageGen} disabled={isGeneratingImg} className="flex flex-col items-center gap-6 group">
-                <div className="w-20 h-20 border border-accent/40 flex items-center justify-center group-hover:border-accent transition-all neon-glow bg-black/20">
-                   <div className={`w-3 h-3 bg-accent ${isGeneratingImg ? 'animate-ping' : ''}`} />
+          <div className="h-full flex flex-col items-center justify-center bg-black/80 raw-grid">
+             <button onClick={handleImageGen} disabled={isGeneratingImg} className="flex flex-col items-center gap-10 group">
+                <div className="w-24 h-24 border border-accent/30 flex items-center justify-center rotate-45 group-hover:border-accent group-hover:bg-accent/5 transition-all duration-1000">
+                   <div className="w-6 h-6 bg-accent/20 group-hover:bg-accent shadow-[0_0_20px_#00f3ff] transition-all" />
                 </div>
-                <span className="text-accent font-orbitron font-black tracking-[0.5em] text-[11px] uppercase text-neon">
-                  {isGeneratingImg ? 'EXTRACTING_VISUALS...' : 'VISUALIZE_TIMELINE'}
+                <span className="text-accent font-orbitron font-black tracking-[0.8em] text-[11px] uppercase glow-text">
+                  {isGeneratingImg ? 'Synthesizing...' : 'Initialize_Visual_Link'}
                 </span>
              </button>
           </div>
         )}
       </div>
 
-      <div className="p-10 md:p-16">
-        <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-20">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-8">
-               <span className="text-[10px] font-mono text-accent tracking-[0.4em] uppercase font-black">Sector_{prediction.category}</span>
-               <div className="w-12 h-[1px] bg-white/10" />
-               <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">Confidence: {prediction.probability}%</span>
+      <div className="p-10 md:p-24 space-y-32">
+        {/* Dossier Header */}
+        <div className="flex flex-col 2xl:flex-row justify-between items-start gap-16">
+          <div className="flex-1 space-y-12">
+            <div className="flex items-center gap-8">
+               <div className="flex items-center gap-4">
+                  <div className="w-3 h-3 bg-accent" />
+                  <span className="text-[13px] font-orbitron font-black text-accent tracking-[0.5em] uppercase">{prediction.category} // YEAR_{prediction.year}</span>
+               </div>
+               <div className="h-px flex-1 bg-white/10" />
+               <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest">Confidence_{prediction.probability}%</span>
             </div>
-            <h3 className="text-5xl md:text-8xl font-orbitron font-black text-white tracking-tighter mb-10 leading-none text-neon">
+            
+            <h3 className="text-7xl md:text-9xl font-inter font-black text-white tracking-tightest leading-[0.85] uppercase">
               {prediction.title}
             </h3>
-            <p className="text-xl md:text-2xl text-zinc-300 font-light leading-relaxed max-w-4xl border-l-2 border-accent/40 pl-8 italic">
+            
+            <p className="text-3xl md:text-4xl text-white font-light border-l-8 border-accent pl-16 leading-tight italic max-w-5xl">
               {prediction.summary}
             </p>
           </div>
           
-          <div className="flex flex-col items-end bg-white/5 p-6 border border-white/10">
-             <div className="text-[10px] font-mono text-accent uppercase tracking-[0.4em] mb-3 font-black">Impact_Level</div>
-             <div className="text-4xl font-orbitron font-black text-white tracking-tighter uppercase text-neon">
+          <div className="2xl:w-1/4 text-right space-y-6 pt-12">
+             <div className="text-[11px] font-orbitron font-black text-white/30 uppercase tracking-widest">Sim_Impact_Index</div>
+             <div className="text-7xl font-orbitron font-black text-white tracking-tighter uppercase drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                 {prediction.impactLevel}
              </div>
+             <div className="h-[2px] w-full bg-accent/20" />
           </div>
         </div>
 
-        {/* Deep Analysis Section */}
-        <div className="mb-20 border border-white/10 p-10 bg-black/60 shadow-2xl">
-           <div className="flex items-center gap-4 mb-10">
-              <div className="w-2 h-2 bg-accent animate-pulse shadow-[0_0_10px_#00f3ff]" />
-              <h4 className="text-[12px] font-orbitron font-black text-white tracking-[0.4em] uppercase">Temporal Logic Node</h4>
+        {/* Dense Analysis Content */}
+        <div className="grid grid-cols-1 2xl:grid-cols-12 gap-32 border-t border-white/10 pt-24">
+          <div className="2xl:col-span-8 space-y-16">
+             <div className="flex items-center gap-8">
+                <h4 className="text-[12px] font-orbitron font-black text-accent tracking-widest uppercase">Temporal_Logic_Stream</h4>
+                <div className="h-px flex-1 bg-accent/20" />
+             </div>
+             <div className="text-white/90 text-xl md:text-2xl font-light leading-relaxed whitespace-pre-line bg-white/[0.02] p-12 md:p-16 border border-white/10 rounded-sm">
+                {prediction.analysis}
+             </div>
+
+             {/* Verification Grounding */}
+             {prediction.sources && prediction.sources.length > 0 && (
+               <div className="space-y-8 pt-12">
+                  <h4 className="text-[11px] font-orbitron font-black text-white/20 tracking-widest uppercase">Verified_Grounding_Nodes</h4>
+                  <div className="flex flex-wrap gap-5">
+                    {prediction.sources.map((src, idx) => (
+                      <a 
+                        key={idx} href={src.uri} target="_blank" rel="noopener noreferrer"
+                        className="px-6 py-4 bg-white/5 border border-white/10 text-[11px] font-mono text-white/60 hover:text-accent hover:border-accent transition-all uppercase tracking-widest flex items-center gap-3"
+                      >
+                        <div className="w-1.5 h-1.5 bg-accent/50" />
+                        {src.title}
+                      </a>
+                    ))}
+                  </div>
+               </div>
+             )}
+          </div>
+
+          {/* Side Operational Matrix */}
+          <aside className="2xl:col-span-4 space-y-24">
+            <div className="space-y-12">
+               <h4 className="text-[12px] font-orbitron font-black text-white tracking-widest uppercase">Regional_Refraction</h4>
+               <div className="space-y-10">
+                  {prediction.regionalImpact.map((impact, i) => (
+                    <div key={i} className="space-y-5">
+                       <div className="flex justify-between items-end">
+                          <span className="text-[14px] font-orbitron font-black text-white uppercase tracking-wider">{impact.region}</span>
+                          <span className="text-accent font-orbitron font-black text-2xl">{impact.value}%</span>
+                       </div>
+                       <div className="h-1 bg-white/5 w-full">
+                          <div className="h-full bg-accent shadow-[0_0_15px_#00f3ff]" style={{ width: `${impact.value}%` }} />
+                       </div>
+                       <p className="text-[11px] text-white/40 uppercase font-mono tracking-widest leading-loose">{impact.description}</p>
+                    </div>
+                  ))}
+               </div>
+            </div>
+
+            {/* Neural Oracle Query */}
+            <div className="glass-panel p-10 border-accent/20 space-y-8">
+               <h4 className="text-[12px] font-orbitron font-black text-white tracking-widest uppercase">Neural_Oracle_Inquiry</h4>
+               <p className="text-[11px] text-white/40 uppercase font-mono tracking-wider">Input complex parameters to cross-examine this specific temporal branch.</p>
+               <input 
+                 type="text" value={analysisQuery} onChange={(e) => setAnalysisQuery(e.target.value)}
+                 className="w-full bg-black/60 border border-white/10 px-6 py-6 text-xs font-mono outline-none focus:border-accent text-white uppercase tracking-widest"
+                 placeholder="AWAITING INPUT..."
+               />
+               <button 
+                 onClick={handleDeepAnalysis} disabled={isAnalyzing}
+                 className="w-full py-6 bg-transparent border border-accent text-accent font-black text-[11px] tracking-widest uppercase hover:bg-accent hover:text-black transition-all"
+               >
+                 {isAnalyzing ? "CONSULTING..." : "COMMIT_INQUIRY"}
+               </button>
+               {analysisResult && (
+                 <div className="mt-6 p-8 bg-accent/5 border border-accent/20 text-xs font-mono text-accent leading-relaxed reveal-anim">
+                   <div className="mb-4 text-[9px] text-accent/50">ORACLE_RESPONSE:</div>
+                   {analysisResult}
+                 </div>
+               )}
+            </div>
+
+            <TaskList predictionId={prediction.id} lang={lang} />
+          </aside>
+        </div>
+
+        {/* Data Action Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-12 pt-24 border-t border-white/10">
+           <div className="flex gap-8">
+             <button 
+               onClick={() => { onSave && onSave(prediction); setIsSaved(true); }}
+               className={`px-12 py-6 text-[12px] font-orbitron font-black tracking-widest uppercase transition-all shadow-xl ${isSaved ? 'bg-white/10 text-white/30 border border-white/5' : 'bg-white text-black hover:bg-accent'}`}
+             >
+               {isSaved ? 'NODE_COMMITTED' : 'SAVE_SIMULATION'}
+             </button>
+             <button 
+               onClick={handlePlayAudio}
+               className={`p-6 border-2 transition-all ${isPlayingAudio ? 'border-accent bg-accent text-black' : 'border-white/20 text-white hover:border-accent'}`}
+             >
+               {isPlayingAudio ? (
+                 <div className="flex gap-1 h-6 items-center px-4">
+                    <div className="w-1.5 h-4 bg-black animate-pulse"></div>
+                    <div className="w-1.5 h-6 bg-black animate-pulse delay-75"></div>
+                    <div className="w-1.5 h-3 bg-black animate-pulse delay-150"></div>
+                 </div>
+               ) : (
+                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" /></svg>
+               )}
+             </button>
            </div>
            
-           <div className="flex gap-4 mb-10">
-              <input 
-                type="text" 
-                value={analysisQuery}
-                onChange={(e) => setAnalysisQuery(e.target.value)}
-                placeholder="Query specific temporal ripple effects..."
-                className="flex-1 bg-white/5 border-b border-white/20 px-4 py-3 text-sm focus:border-accent outline-none transition-all text-white placeholder:text-zinc-600"
-              />
-              <button 
-                onClick={handleDeepAnalysis} 
-                disabled={isAnalyzing}
-                className="px-10 py-3 border border-accent text-accent text-[11px] font-black tracking-widest uppercase hover:bg-accent hover:text-black transition-all shadow-[0_0_10px_rgba(0,243,255,0.2)]"
-              >
-                {isAnalyzing ? "SYNCING..." : "INVOKE"}
-              </button>
-           </div>
-
-           {analysisResult && (
-             <div className="text-zinc-200 text-sm leading-relaxed font-mono bg-black/80 p-8 border border-accent/20 animate-in fade-in duration-500">
-                <div className="text-accent text-[9px] mb-4 tracking-widest">ANALYSIS_RESULT:</div>
-                {analysisResult}
-             </div>
-           )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 pt-16 border-t border-white/10">
-          <div className="lg:col-span-8">
-             <h4 className="text-[12px] font-orbitron font-black text-white/40 tracking-[0.6em] mb-12 uppercase">Regional_Matrix_Data</h4>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {prediction.regionalImpact.map((impact, i) => (
-                  <div key={i} className="group p-8 border border-white/5 bg-white/[0.02] hover:border-accent/40 transition-all">
-                     <div className="flex justify-between items-center mb-6">
-                        <span className="text-[11px] font-orbitron font-black text-white/70 uppercase tracking-widest">{impact.region}</span>
-                        <span className="text-accent font-mono text-xs font-black">{impact.value}%</span>
-                     </div>
-                     <div className="h-1.5 bg-white/5 w-full rounded-full overflow-hidden">
-                        <div className="h-full bg-accent shadow-[0_0_15px_#00f3ff]" style={{ width: `${impact.value}%` }} />
-                     </div>
-                     <p className="mt-4 text-[10px] text-zinc-500 font-medium leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity">
-                       {impact.description}
-                     </p>
-                  </div>
-                ))}
-             </div>
-          </div>
-          
-          <div className="lg:col-span-4 bg-white/[0.01] p-8 border border-white/5">
-             <TaskList predictionId={prediction.id} lang={lang} />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-8 mt-20 pt-16 border-t border-white/10">
-           <button onClick={() => { onSave && onSave(prediction); setIsSaved(true); }} className={`px-12 py-5 neon-btn text-[11px] font-orbitron font-black tracking-[0.5em] uppercase ${isSaved ? 'opacity-30 pointer-events-none' : 'bg-accent text-black'}`}>
-             {isSaved ? '[ COMMIT_SUCCESS ]' : '[ COMMIT_TO_CORE ]'}
-           </button>
-           <button onClick={handlePlayAudio} className="p-5 border border-white/10 text-accent hover:border-accent hover:bg-accent/5 transition-all">
-              {isPlayingAudio ? (
-                <div className="flex gap-1.5 h-4 items-center px-2">
-                  <div className="w-1 h-3 bg-accent animate-pulse" />
-                  <div className="w-1 h-4 bg-accent animate-pulse delay-75" />
-                  <div className="w-1 h-2 bg-accent animate-pulse delay-150" />
-                </div>
-              ) : (
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" /></svg>
-              )}
-           </button>
-           <div className="ml-auto text-right">
-              <div className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] mb-1">Temporal_Identity</div>
-              <div className="text-[12px] font-mono text-white/80 font-black">ID: {prediction.id.toUpperCase()}</div>
+           <div className="flex flex-col items-end gap-3">
+             <span className="text-[11px] font-mono text-white/20 uppercase tracking-widest">Temporal_Node_ID</span>
+             <span className="text-[14px] font-mono text-accent font-black bg-accent/5 px-6 py-3 border border-accent/20 uppercase tracking-[0.3em]">
+               {prediction.id.toUpperCase()}
+             </span>
            </div>
         </div>
       </div>

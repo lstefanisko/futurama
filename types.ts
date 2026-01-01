@@ -1,13 +1,14 @@
+
 export enum Category {
-  TECHNOLOGY = 'TECHNOLOGY',
-  SOCIETY = 'SOCIETY',
-  ENVIRONMENT = 'ENVIRONMENT',
-  HEALTH = 'HEALTH',
-  SPACE = 'SPACE'
+  SINGULARITY = 'SINGULARITY',
+  META_SOCIETY = 'META_SOCIETY',
+  ECO_CORE = 'ECO_CORE',
+  BIO_GENETICS = 'BIO_GENETICS',
+  GALACTIC_AXIS = 'GALACTIC_AXIS'
 }
 
-export type Language = 'en' | 'sk' | 'de' | 'pl' | 'es' | 'fr' | 'it' | 'ja' | 'pt' | 'zh';
-export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY';
+export type Language = 'en' | 'de' | 'es' | 'pl' | 'sk' | 'fr' | 'it';
+export type Currency = 'USD' | 'EUR' | 'GBP';
 
 export interface RegionalImpact {
   region: string;
@@ -18,13 +19,6 @@ export interface RegionalImpact {
 export interface PredictionSource {
   uri: string;
   title: string;
-}
-
-export interface Task {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: number;
 }
 
 export interface Prediction {
@@ -43,19 +37,17 @@ export interface Prediction {
   timestamp: number;
 }
 
-export interface PricingPlan {
-  id: string;
-  name: string;
-  description: string;
-  price: Record<Currency, string>;
-  period: string;
-  features: string[];
-  isPopular?: boolean;
-}
-
 export interface UserProfile {
   id: string;
   email: string;
   is_pro: boolean;
+  is_standard: boolean;
   predictions_count: number;
+}
+
+export interface Task {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: number;
 }

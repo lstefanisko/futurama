@@ -1,133 +1,241 @@
+
 import { Category, Language } from './types';
 
-const baseEn = {
-  title: "FUTUREFORECAST",
-  explorer: "Future Lab",
-  pricing: "Tiers",
-  vault: "Neural Vault",
-  settings: "Parameters",
-  timeline: "Target Year",
-  sector: "Sector",
-  intensity: "Neural Intensity",
-  generate: "INVOKE ORACLE",
-  globalImpact: "Regional Matrix",
-  impactLegend: "Load Map",
-  probabilityLabel: "Neural Fidelity",
-  analysisLabel: "Core Logic",
-  sourcesTitle: "Grounding Sources",
-  loading: "Accessing Future Node...",
-  readyTitle: "NEURO-ORACLE",
-  readyDesc: "Extracting temporal possibilities with algorithmic precision.",
-  slogan: "AI PREDICTIONS WITH PRECISION UP TO THE YEAR 2100",
-  visionStreamTitle: "LIVE TEMPORAL STREAM",
-  visionStreamDesc: "Real-time visual data nodes from high-probability future branches.",
-  shareVision: "Broadcast",
-  downloadImg: "Export",
-  saveVault: "Commit to Vault",
-  visualize: "AI Vision",
-  proOnly: "Restricted",
-  yearLimit: "Deep timeline access (2100) requires Visionary PRO clearance.",
-  tasksTitle: "Neural Roadmap",
-  addTaskPlaceholder: "Define objective...",
-  noTasks: "Awaiting system objectives.",
-  vaultEmpty: "Vault is empty.",
-  plans: "Access Tiers",
-  choosePlan: "Initialize",
-  payNow: "Unlock Access",
-  perMonth: "/mo",
-  usageGuide: "Operational Manual",
-  categories: {
-    [Category.TECHNOLOGY]: "SINGULARITY",
-    [Category.SOCIETY]: "META-SOCIETY",
-    [Category.ENVIRONMENT]: "ECO-CORE",
-    [Category.HEALTH]: "BIO-GENETICS",
-    [Category.SPACE]: "GALACTIC AXIS",
-  },
-  planDetails: {
-    guest: {
-      desc: "Basic exploration of the immediate future.",
-      usage: "Use the slider up to 2045. View text-based trends and public archives. Ideal for casual observation."
-    },
-    pro: {
-      desc: "Full temporal resolution and synthesis.",
-      usage: "Unlock the 2100 axis. Use 'Visualize' for AI images, 'Play' for Neural TTS, and 'Invoke' for Deep Temporal Analysis."
-    },
-    oracle: {
-      desc: "Maximum fidelity for enterprise and research.",
-      usage: "Priority access to Gemini 3 Pro models. API node connectivity for external systems. Unlimited visual synthesis."
-    }
-  }
-};
-
-const sk = {
-  ...baseEn,
-  title: "FUTUREFORECAST",
-  explorer: "Laboratórium",
-  pricing: "Prístup",
-  vault: "Archív Vízií",
-  settings: "Parametre",
-  timeline: "Cieľový Rok",
-  sector: "Sektor",
-  intensity: "Intenzita",
-  generate: "ZVOLAŤ ORÁKULUM",
-  globalImpact: "Regionálna Matrica",
-  impactLegend: "Záťaž",
-  probabilityLabel: "Fidelita",
-  analysisLabel: "Analýza",
-  sourcesTitle: "Zdroje",
-  loading: "Syntéza Uzlov...",
-  readyTitle: "NEURO-ORÁKULUM",
-  readyDesc: "Extrakcia časových možností s presnosťou algoritmu.",
-  slogan: "AI PREDPOVEDE S PRECÍZNOSŤOU AŽ DO ROKU 2100",
-  visionStreamTitle: "ŽIVÝ PRÚD ČASU",
-  visionStreamDesc: "Vizuálne dátové uzly z vysoko pravdepodobných vetiev budúcnosti.",
-  shareVision: "Zdieľať",
-  downloadImg: "Exportovať",
-  saveVault: "Uložiť do Archívu",
-  visualize: "AI Vizualizácia",
-  proOnly: "Obmedzené",
-  yearLimit: "Prístup k osi 2100 vyžaduje Visionary PRO autorizáciu.",
-  tasksTitle: "Cestovná Mapa",
-  addTaskPlaceholder: "Definovať cieľ...",
-  noTasks: "Systém čaká na ciele.",
-  vaultEmpty: "Archív je prázdny.",
-  plans: "Úrovne Prístupu",
-  choosePlan: "Aktivovať",
-  payNow: "Odomknúť Orákulum",
-  perMonth: "/mes",
-  usageGuide: "Operačný Manuál",
-  categories: {
-    [Category.TECHNOLOGY]: "SINGULARITA",
-    [Category.SOCIETY]: "SPOLOČNOSŤ",
-    [Category.ENVIRONMENT]: "PROSTREDIE",
-    [Category.HEALTH]: "BIO-GENETIKA",
-    [Category.SPACE]: "VESMÍR",
-  },
-  planDetails: {
-    guest: {
-      desc: "Základný prieskum blízkej budúcnosti.",
-      usage: "Použite slider do roku 2045. Sledujte textové trendy a verejný archív. Ideálne pre občasných pozorovateľov."
-    },
-    pro: {
-      desc: "Plné časové rozlíšenie a syntéza dát.",
-      usage: "Odomknite os 2100. Použite 'Vizualizovať' pre AI obrazy, 'Prehrať' pre audio a 'Vyvolať' pre hĺbkovú analýzu."
-    },
-    oracle: {
-      desc: "Maximálna presnosť pre firmy a výskum.",
-      usage: "Prioritný prístup k modelom Gemini 3 Pro. API prepojenia pre externé systémy. Neobmedzená vizuálna syntéza."
-    }
-  }
-};
-
-const de = { ...baseEn, title: "ZUKUNFTSPROGNOSE", explorer: "Zukunftslabor", pricing: "Tarife", perMonth: "/monat", usageGuide: "Handbuch" };
-const pl = { ...baseEn, title: "PROGNOZA PRZYSZŁOŚCI", explorer: "Laboratorium", pricing: "Ceny", perMonth: "/mies", usageGuide: "Instrukcja" };
-const es = { ...baseEn, title: "PRONÓSTICO FUTURO", explorer: "Lab Futuro", pricing: "Planes", perMonth: "/mes", usageGuide: "Manual" };
-const fr = { ...baseEn, title: "PRÉVISIONS FUTURES", explorer: "Lab Futur", pricing: "Tarifs", perMonth: "/mois", usageGuide: "Manuel" };
-const it = { ...baseEn, title: "PREVISIONI FUTURE", explorer: "Lab Futuro", pricing: "Piani", perMonth: "/mese", usageGuide: "Manuale" };
-const ja = { ...baseEn, title: "未来予測", explorer: "ラボ", pricing: "料金", perMonth: "/月", usageGuide: "操作ガイド" };
-const pt = { ...baseEn, title: "PREVISÃO FUTURA", explorer: "Laboratório", pricing: "Planos", perMonth: "/mês", usageGuide: "Manual" };
-const zh = { ...baseEn, title: "未来预测", explorer: "实验室", pricing: "方案", perMonth: "/月", usageGuide: "操作指南" };
-
+// Fix: Added missing language keys (de, es, pl, fr, it) to satisfy Record<Language, any> type requirement
 export const translations: Record<Language, any> = {
-  en: baseEn, sk, de, pl, es, fr, it, ja, pt, zh
+  en: {
+    title: "FUTUREFORECAST",
+    timeline: "Temporal Axis",
+    archive: "The Vault",
+    membership: "Access Tiers",
+    howItWorks: "Methodology",
+    methodology: "Simulative Methodology",
+    generate: "INITIATE_FLUX",
+    loading: "DECRYPTING_TEMPORAL_FLUX...",
+    readyDesc: "Humanity's next century is unwritten. Our neural core synthesizes planetary data into high-fidelity probability nodes.",
+    cta: "ACCESS SYSTEM",
+    sectors: "Domain Sectors",
+    yearLabel: "Temporal Horizon",
+    impact: "Impact_Lvl",
+    tasksTitle: "Strategic Objectives",
+    addTaskPlaceholder: "Input objective parameter...",
+    noTasks: "No active objectives found in this temporal branch.",
+    plans: {
+      perMonth: "per cycle"
+    },
+    legal: {
+      privacy: "Data Protocol",
+      terms: "Usage Agreement",
+      cookies: "Trace Policy",
+      gdpr: "Entity Privacy",
+      disclaimer: "Calculations are probabilistic. This system is a strategic foresight tool."
+    },
+    categories: {
+      [Category.SINGULARITY]: "SYNTHETIC_EVO",
+      [Category.META_SOCIETY]: "CULTURAL_DRIFT",
+      [Category.ECO_CORE]: "PLANETARY_EQU",
+      [Category.BIO_GENETICS]: "GENETIC_FORGE",
+      [Category.GALACTIC_AXIS]: "STellar_AXIS",
+    }
+  },
+  de: {
+    title: "FUTUREFORECAST",
+    timeline: "Zeitachse",
+    archive: "Der Tresor",
+    membership: "Mitgliedschaft",
+    howItWorks: "Methodik",
+    methodology: "Simulative Methodik",
+    generate: "FLUSS_INITIIEREN",
+    loading: "DECRYPTING_TEMPORAL_FLUX...",
+    readyDesc: "Das nächste Jahrhundert der Menschheit ist ungeschrieben. Unser Kern synthetisiert planetare Daten.",
+    cta: "SYSTEMZUGRIFF",
+    sectors: "Domänensektoren",
+    yearLabel: "Zeithorizont",
+    impact: "Impact_Lvl",
+    tasksTitle: "Strategische Ziele",
+    addTaskPlaceholder: "Zielparameter eingeben...",
+    noTasks: "Keine aktiven Ziele in diesem Zweig gefunden.",
+    plans: { perMonth: "pro Zyklus" },
+    legal: {
+      privacy: "Datenprotokoll",
+      terms: "Nutzungsbedingungen",
+      cookies: "Trace-Richtlinie",
+      gdpr: "Einheitenschutz",
+      disclaimer: "Berechnungen sind probabilistisch."
+    },
+    categories: {
+      [Category.SINGULARITY]: "SYNTHETISCHE_EVO",
+      [Category.META_SOCIETY]: "KULTURDRIFT",
+      [Category.ECO_CORE]: "PLANETAR_EQU",
+      [Category.BIO_GENETICS]: "GENETIK_SCHMIEDE",
+      [Category.GALACTIC_AXIS]: "STERNEN_ACHSE",
+    }
+  },
+  es: {
+    title: "FUTUREFORECAST",
+    timeline: "Eje Temporal",
+    archive: "La Bóveda",
+    membership: "Membresía",
+    howItWorks: "Metodología",
+    methodology: "Metodología Simulativa",
+    generate: "INICIAR_FLUJO",
+    loading: "DECRYPTING_TEMPORAL_FLUX...",
+    readyDesc: "El próximo siglo de la humanidad no está escrito.",
+    cta: "ACCESO AL SISTEMA",
+    sectors: "Sectores",
+    yearLabel: "Horizonte Temporal",
+    impact: "Impact_Lvl",
+    tasksTitle: "Objetivos Estratégicos",
+    addTaskPlaceholder: "Ingresar parámetro...",
+    noTasks: "No se encontraron objetivos activos.",
+    plans: { perMonth: "por ciclo" },
+    legal: {
+      privacy: "Protocolo de Datos",
+      terms: "Acuerdo de Uso",
+      cookies: "Política de Rastreo",
+      gdpr: "Privacidad",
+      disclaimer: "Los cálculos son probabilísticos."
+    },
+    categories: {
+      [Category.SINGULARITY]: "EVO_SINTÉTICA",
+      [Category.META_SOCIETY]: "DERIVA_CULTURAL",
+      [Category.ECO_CORE]: "EQU_PLANETARIO",
+      [Category.BIO_GENETICS]: "FORJA_GENÉTICA",
+      [Category.GALACTIC_AXIS]: "EJE_ESTELAR",
+    }
+  },
+  pl: {
+    title: "FUTUREFORECAST",
+    timeline: "Oś Czasu",
+    archive: "Krypta",
+    membership: "Członkostwo",
+    howItWorks: "Metodologia",
+    methodology: "Metodologia Symulacyjna",
+    generate: "INICJUJ_FLUX",
+    loading: "DECRYPTING_TEMPORAL_FLUX...",
+    readyDesc: "Następne stulecie ludzkości jest niezapisane.",
+    cta: "DOSTĘP DO SYSTEMU",
+    sectors: "Sektory",
+    yearLabel: "Horyzont Czasowy",
+    impact: "Impact_Lvl",
+    tasksTitle: "Cele Strategiczne",
+    addTaskPlaceholder: "Wprowadź parametr...",
+    noTasks: "Nie znaleziono aktywnych celów.",
+    plans: { perMonth: "na cykl" },
+    legal: {
+      privacy: "Protokół Danych",
+      terms: "Umowa Użytkowania",
+      cookies: "Polityka Śledzenia",
+      gdpr: "Prywatność",
+      disclaimer: "Obliczenia są probabilistyczne."
+    },
+    categories: {
+      [Category.SINGULARITY]: "SYNTETYCZNA_EVO",
+      [Category.META_SOCIETY]: "DRYF_KULTUROWY",
+      [Category.ECO_CORE]: "RÓWNOWAGA_PLANETARNA",
+      [Category.BIO_GENETICS]: "KUŹNIA_GENETYCZNA",
+      [Category.GALACTIC_AXIS]: "OŚ_GWIEZDNA",
+    }
+  },
+  sk: {
+    title: "FUTUREFORECAST",
+    timeline: "Časová os",
+    archive: "Archív",
+    membership: "Členstvo",
+    howItWorks: "Metodológia",
+    methodology: "Simulačná metodológia",
+    generate: "SPUSTIŤ_FLUX",
+    loading: "DEŠIFRUJEM_TEMPORÁLNY_TOK...",
+    readyDesc: "Nasledujúce storočie ľudstva je nepísané. Naše jadro syntetizuje planetárne dáta do uzlov pravdepodobnosti.",
+    cta: "VSTÚPIŤ DO SYSTÉMU",
+    sectors: "Sektory domén",
+    yearLabel: "Časový horizont",
+    impact: "Impact_Lvl",
+    tasksTitle: "Strategické ciele",
+    addTaskPlaceholder: "Zadajte parameter cieľa...",
+    noTasks: "Žiadne aktívne ciele v tejto časovej vetve.",
+    plans: {
+      perMonth: "za cyklus"
+    },
+    legal: {
+      privacy: "Dátový protokol",
+      terms: "Dohoda o používaní",
+      cookies: "Zásady trace",
+      gdpr: "Súkromie entít",
+      disclaimer: "Výpočty sú pravdepodobnostné. Tento systém je nástroj pre strategické prognózy."
+    },
+    categories: {
+      [Category.SINGULARITY]: "SYNTETICKÁ_EVO",
+      [Category.META_SOCIETY]: "KULTÚRNY_TOK",
+      [Category.ECO_CORE]: "PLANETÁRNA_EQU",
+      [Category.BIO_GENETICS]: "GENETICKÁ_KOVÁČŇA",
+      [Category.GALACTIC_AXIS]: "VESMÍRNA_OS",
+    }
+  },
+  fr: {
+    title: "FUTUREFORECAST",
+    timeline: "Axe Temporel",
+    archive: "Le Coffre",
+    membership: "Abonnement",
+    howItWorks: "Méthodologie",
+    methodology: "Méthodologie de Simulation",
+    generate: "INITIER_FLUX",
+    loading: "DECRYPTING_TEMPORAL_FLUX...",
+    readyDesc: "Le prochain siècle de l'humanité n'est pas écrit.",
+    cta: "ACCÉDER AU SYSTÈME",
+    sectors: "Secteurs",
+    yearLabel: "Horizon Temporel",
+    impact: "Impact_Lvl",
+    tasksTitle: "Objectifs Stratégiques",
+    addTaskPlaceholder: "Entrer paramètre...",
+    noTasks: "Aucun objectif trouvé.",
+    plans: { perMonth: "par cycle" },
+    legal: {
+      privacy: "Protocole de Données",
+      terms: "Accord d'Utilisation",
+      cookies: "Politique de Trace",
+      gdpr: "Confidentialité",
+      disclaimer: "Les calculs sont probabilistes."
+    },
+    categories: {
+      [Category.SINGULARITY]: "EVO_SYNTHÉTIQUE",
+      [Category.META_SOCIETY]: "DÉRIVE_CULTURELLE",
+      [Category.ECO_CORE]: "EQU_PLANÉTAIRE",
+      [Category.BIO_GENETICS]: "FORGE_GÉNÉTIQUE",
+      [Category.GALACTIC_AXIS]: "AXE_STELLAIRE",
+    }
+  },
+  it: {
+    title: "FUTUREFORECAST",
+    timeline: "Asse Temporale",
+    archive: "Il Vault",
+    membership: "Abbonamenti",
+    howItWorks: "Metodologia",
+    methodology: "Metodologia Simulativa",
+    generate: "INIZIA_FLUSSO",
+    loading: "DECRYPTING_TEMPORAL_FLUX...",
+    readyDesc: "Il prossimo secolo dell'umanità non è scritto.",
+    cta: "ACCEDI AL SISTEMA",
+    sectors: "Settori",
+    yearLabel: "Orizzonte Temporale",
+    impact: "Impact_Lvl",
+    tasksTitle: "Obiettivi Strategici",
+    addTaskPlaceholder: "Inserisci parametro...",
+    noTasks: "Nessun obiettivo attivo trovato.",
+    plans: { perMonth: "per ciclo" },
+    legal: {
+      privacy: "Protocollo Dati",
+      terms: "Accordo d'Uso",
+      cookies: "Policy Tracciamento",
+      gdpr: "Privacy",
+      disclaimer: "I calcoli sono probabilistici."
+    },
+    categories: {
+      [Category.SINGULARITY]: "EVO_SINTETICA",
+      [Category.META_SOCIETY]: "DERIVA_CULTURALE",
+      [Category.ECO_CORE]: "EQU_PLANETARIO",
+      [Category.BIO_GENETICS]: "FORGIA_GENETICA",
+      [Category.GALACTIC_AXIS]: "ASSE_STELLARE",
+    }
+  }
 };
