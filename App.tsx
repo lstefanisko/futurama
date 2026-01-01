@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Category, Prediction, Language, UserProfile } from './types';
 import { getFuturePrediction } from './services/geminiService';
 import PredictionCard from './components/PredictionCard';
@@ -150,8 +151,22 @@ const App: React.FC = () => {
                 </div>
               )}
            </div>
-        )}
-      </main>
+           {vault.length === 0 ? (
+             <div className="p-32 glass-panel border border-white/5 rounded-xl text-center">
+                <p className="text-zinc-600 font-orbitron uppercase tracking-[1em] text-[12px]">{t.vaultEmpty}</p>
+             </div>
+           ) : (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+               {vault.map(p => (
+                 <div key={p.id} className="cursor-pointer hover:scale-[1.01] transition-transform" onClick={() => { setPrediction(p); setView('explorer'); window.scrollTo(0,0); }}>
+                    <PredictionCard prediction={p} lang={lang} isPro={true} />
+                 </div>
+               ))}
+             </div>
+           )}
+        </main>
+      )}
+      <Analytics />
     </div>
   );
 };
