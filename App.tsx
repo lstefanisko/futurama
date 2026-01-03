@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Category, Prediction, Language, UserProfile } from './types';
 import { getFuturePrediction } from './services/geminiService';
 import PredictionCard from './components/PredictionCard';
@@ -294,6 +295,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
+      <Analytics />
     </div>
   );
 };
